@@ -37,16 +37,19 @@ namespace embree
     size_t bytesUsed();
 
   private:
-    void statistics(NodeRef node, const BBox3fa& bounds, size_t& depth);
+    void statistics(NodeRef node, const float A, size_t& depth);
 
   private:
     BVH4* bvh;
     float bvhSAH;                      //!< SAH cost of the BVH4.
-    float leafSAH;                      //!< SAH cost of the BVH4.
-    size_t numNodes;                   //!< Number of internal nodes.
-    size_t numLeaves;                  //!< Number of leaf nodes.
-    size_t numPrimBlocks;              //!< Number of primitive blocks.
-    size_t numPrims;                   //!< Number of primitives.
+    float leafSAH;                     //!< SAH cost of the BVH4.
+    size_t numUANodes;                   //!< Number of internal nodes.
+    size_t numUUNodes;                   //!< Number of internal nodes.
+    size_t numCANodes;                   //!< Number of internal nodes.
+    size_t numCUNodes;                   //!< Number of internal nodes.
+    size_t numLeaves[4];               //!< Number of leaf nodes.
+    size_t numPrimBlocks[4];           //!< Number of primitive blocks.
+    size_t numPrims[4];                //!< Number of primitives.
     size_t depth;                      //!< Depth of the tree.
   };
 }
