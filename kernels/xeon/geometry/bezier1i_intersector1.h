@@ -348,24 +348,24 @@ namespace embree
 #endif
     }
 
-    static __forceinline void intersect(const Precalculations& pre, Ray& ray, const Bezier1i* curves, size_t num, void* geom)
+    static __forceinline void intersect(const Precalculations& pre, Ray& ray, size_t ty, void* curves, size_t num, void* geom)
     {
       for (size_t i=0; i<num; i++)
 	{
-#if defined(PRE_SUBDIVISION_HACK)
-	  if (unlikely(any(pre.mbox.ids == curves[i].primID))) continue; // FIXME: works only for single hair set
-#endif
+//#if defined(PRE_SUBDIVISION_HACK)
+	  if (unlikely(any(pre.mbox.ids == ((const Bezier1i*)curves)[i].primID))) continue; // FIXME: works only for single hair set
+//#endif
 
 #if USE_RECURSIVE_INTERSECTION == 0
-	  intersect(pre,ray,curves[i],geom);
+	  intersect(pre,ray,((const Bezier1i*)curves)[i],geom);
 #else
-	  intersect_recursive(pre,ray,curves[i],geom);
+	  intersect_recursive(pre,ray,((const Bezier1i*)curves)[i],geom);
 #endif
 
-#if defined(PRE_SUBDIVISION_HACK)
-	  *(unsigned int*)&pre.mbox.ids[pre.mbox.index] = curves[i].primID; // FIXME: works only for single hair set
+//#if defined(PRE_SUBDIVISION_HACK)
+	  *(unsigned int*)&pre.mbox.ids[pre.mbox.index] = ((const Bezier1i*)curves)[i].primID; // FIXME: works only for single hair set
 	  *(unsigned int*)&pre.mbox.index = (pre.mbox.index + 1 ) % 8;
-#endif
+//#endif
 	}
     }
 
@@ -434,6 +434,7 @@ namespace embree
     static bool occluded_recursive(const float max_radius, Ray& ray, const BezierCurve3D &curve2D, const void* geom, int geomID, int primID)
     {
       const BBox3fa bounds = curve2D.bounds();
+
 #if 1
       if (bounds.lower.x > -max_radius ||
           bounds.upper.x <  max_radius ||
@@ -507,13 +508,13 @@ namespace embree
       return occluded_recursive(max_radius,ray,curve2D,geom,curve_in.geomID,curve_in.primID);
     }
 
-    static __forceinline bool occluded(const Precalculations& pre, Ray& ray, const Bezier1i* curves, size_t num, void* geom) 
+    static __forceinline bool occluded(const Precalculations& pre, Ray& ray, size_t ty, void* curves, size_t num, void* geom) 
     {
       for (size_t i=0; i<num; i++) 
 #if USE_RECURSIVE_INTERSECTION == 0
-        if (occluded(pre,ray,curves[i],geom))
+        if (occluded(pre,ray,((const Bezier1i*)curves)[i],geom))
 #else
-        if (occluded_recursive(pre,ray,curves[i],geom))
+        if (occluded_recursive(pre,ray,((const Bezier1i*)curves)[i],geom))
 #endif
           return true;
 

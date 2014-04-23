@@ -153,10 +153,10 @@ namespace embree
 #endif
     }
 
-    static __forceinline void intersect(const Precalculations& pre, Ray& ray, const Bezier1* curves, size_t num, void* geom)
+    static __forceinline void intersect(const Precalculations& pre, Ray& ray, size_t ty, void* curves, size_t num, void* geom)
     {
       for (size_t i=0; i<num; i++)
-        intersect(pre,ray,curves[i],geom);
+        intersect(pre,ray,((const Bezier1*)curves)[i],geom);
     }
 
     static __forceinline bool occluded(const Precalculations& pre, Ray& ray, const Bezier1& bezier, const void* geom) 
@@ -220,10 +220,10 @@ namespace embree
       return true;
     }
 
-    static __forceinline bool occluded(const Precalculations& pre, Ray& ray, const Bezier1* curves, size_t num, void* geom) 
+    static __forceinline bool occluded(const Precalculations& pre, Ray& ray, size_t ty, void* curves, size_t num, void* geom) 
     {
       for (size_t i=0; i<num; i++) 
-        if (occluded(pre,ray,curves[i],geom))
+        if (occluded(pre,ray,((const Bezier1*)curves)[i],geom))
           return true;
 
       return false;

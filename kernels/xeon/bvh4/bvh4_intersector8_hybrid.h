@@ -165,8 +165,8 @@ namespace embree
 
 		/*! this is a leaf node */
 		STAT3(normal.trav_leaves, 1, 1, 1);
-		size_t num; Primitive* prim = (Primitive*)cur.leaf(num);
-		PrimitiveIntersector8::intersect(ray, k, prim, num, bvh->geometry);
+		size_t num,ty; Primitive* prim = (Primitive*)cur.getLeaf(num,ty);
+		PrimitiveIntersector8::intersect(ray, k, /*ty, */prim, num, bvh->geometry);
 		rayFar = ray.tfar[k];
 	      }
 	  }
@@ -284,8 +284,8 @@ namespace embree
         
 		/*! this is a leaf node */
 		STAT3(shadow.trav_leaves,1,1,1);
-		size_t num; Primitive* prim = (Primitive*) cur.leaf(num);
-		if (PrimitiveIntersector8::occluded(ray,k,prim,num,bvh->geometry)) {
+		size_t num,ty; Primitive* prim = (Primitive*) cur.getLeaf(num,ty);
+		if (PrimitiveIntersector8::occluded(ray,k,/*ty,*/prim,num,bvh->geometry)) {
 		  ray.geomID[k] = 0;
 		  return true;
 		}

@@ -871,7 +871,7 @@ namespace embree
     __forceinline BBox3fa BVH4BuilderMorton::leafBoundsTriangle1(NodeRef& ref)
     {
       BBox3fa bounds = empty;
-      size_t num; Triangle1* tri = (Triangle1*) ref.leaf(num);
+      size_t num,ty; Triangle1* tri = (Triangle1*) ref.getLeaf(num,ty);
       for (size_t i=0; i<num; i++) 
         bounds.extend(tri[i].bounds());
       return bounds;
@@ -880,7 +880,7 @@ namespace embree
     __forceinline BBox3fa BVH4BuilderMorton::leafBoundsTriangle4(NodeRef& ref)
     {
       BBox3fa bounds = empty;
-      size_t num; Triangle4* tri = (Triangle4*) ref.leaf(num);
+      size_t num,ty; Triangle4* tri = (Triangle4*) ref.getLeaf(num,ty);
       for (size_t i=0; i<num; i++) 
         bounds.extend(tri[i].bounds());
       return bounds;
@@ -889,7 +889,7 @@ namespace embree
     __forceinline BBox3fa BVH4BuilderMorton::leafBoundsTriangle1v(NodeRef& ref)
     {
       BBox3fa bounds = empty;
-      size_t num; Triangle1v* tri = (Triangle1v*) ref.leaf(num);
+      size_t num,ty; Triangle1v* tri = (Triangle1v*) ref.getLeaf(num,ty);
       for (size_t i=0; i<num; i++) 
         bounds.extend(tri[i].bounds());
       return bounds;
@@ -898,7 +898,7 @@ namespace embree
     __forceinline BBox3fa BVH4BuilderMorton::leafBoundsTriangle4v(NodeRef& ref)
     {
       BBox3fa bounds = empty;
-      size_t num; Triangle4v* tri = (Triangle4v*) ref.leaf(num);
+      size_t num,ty; Triangle4v* tri = (Triangle4v*) ref.getLeaf(num,ty);
       for (size_t i=0; i<num; i++) 
         bounds.extend(tri[i].bounds());
       return bounds;

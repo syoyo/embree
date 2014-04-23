@@ -22,6 +22,8 @@
 #include "common/scene.h"
 #include "geometry/primitive.h"
 
+//#define HIGH_BIT_ENCODING 1
+
 namespace embree
 {
   /*! Multi BVH with 4 children. Each node stores the bounding box of
@@ -151,12 +153,12 @@ namespace embree
       }
 
       /*! returns leaf pointer */
-      __forceinline char* leaf(size_t& num) const {
+      /*__forceinline char* leaf(size_t& num) const {
         assert(isLeaf());
         num  = ptr >> 60;
         return (char*)(ptr & ~deco_mask);
         //return (char*)(((ptr >> 4) << 8) >> 4); //~deco_mask);
-      }
+	}*/
 
     private:
       size_t ptr;

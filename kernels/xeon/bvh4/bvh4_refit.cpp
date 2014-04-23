@@ -101,8 +101,8 @@ namespace embree
       }
       else
       {
-        size_t num; 
-        ref.leaf(num);
+        size_t num, ty; 
+        ref.getLeaf(num,ty);
         return num;
       }
     }
@@ -134,7 +134,7 @@ namespace embree
     
     __forceinline BBox3fa BVH4Refit::leaf_bounds(NodeRef& ref)
     {
-      size_t num; char* tri = ref.leaf(num);
+      size_t num,ty; char* tri = ref.getLeaf(num,ty);
       if (unlikely(num == 0)) return empty;
       return bvh->primTy.update(tri,num,mesh);
     }

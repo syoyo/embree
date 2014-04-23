@@ -36,6 +36,21 @@ namespace embree
       return merge(BBox3fa(v0),BBox3fa(v1),BBox3fa(v2));
     }
 
+    /*! calculate the bounds of the triangle */
+    __forceinline BBox3fa bounds(const LinearSpace3fa& space) const {
+      return merge(BBox3fa(xfmPoint(space,v0)),BBox3fa(xfmPoint(space,v1)),BBox3fa(xfmPoint(space,v2)));
+    }
+
+    /*! calculate the center of the triangle */
+    __forceinline Vec3fa center() const {
+      return embree::center(bounds());
+    }
+
+    /*! calculate the center of the triangle */
+    __forceinline Vec3fa center(const LinearSpace3fa& space) const {
+      return embree::center(bounds(space));
+    }
+
     /*! access hidden members */
     __forceinline unsigned primID() const { return v0.a; }
     __forceinline unsigned geomID() const { return v1.a; }

@@ -239,7 +239,7 @@ namespace embree
         /*! this is a leaf node */
         STAT3(normal.trav_leaves,1,1,1);
         size_t num; Triangle* tri = (Triangle*) cur.leaf(triPtr,num);
-        TriangleIntersector::intersect(pre,ray,tri,num,bvh->geometry);
+        TriangleIntersector::intersect(pre,ray,0,tri,num,bvh->geometry);
         rayFar = ray.tfar;
       }
 #endif
@@ -424,7 +424,7 @@ namespace embree
         /*! this is a leaf node */
         STAT3(shadow.trav_leaves,1,1,1);
         size_t num; Triangle* tri = (Triangle*) cur.leaf(triPtr,num);
-        if (TriangleIntersector::occluded(pre,ray,tri,num,bvh->geometry)) {
+        if (TriangleIntersector::occluded(pre,ray,0,tri,num,bvh->geometry)) {
           ray.geomID = 0;
           break;
         }

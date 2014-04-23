@@ -35,7 +35,7 @@ namespace embree
       prim.accel->intersect((RTCRay&)ray,prim.item);
     }
 
-    static __forceinline void intersect(const Precalculations& pre, Ray& ray, const Primitive* prim, size_t num, const void* geom) 
+    static __forceinline void intersect(const Precalculations& pre, Ray& ray, size_t ty, const Primitive* prim, size_t num, const void* geom) 
     {
       for (size_t i=0; i<num; i++) 
         intersect(pre,ray,prim[i],geom);
@@ -48,7 +48,7 @@ namespace embree
       return ray.geomID == 0;
     }
 
-    static __forceinline bool occluded(const Precalculations& pre, Ray& ray, const Primitive* prim, size_t num, const void* geom) 
+    static __forceinline bool occluded(const Precalculations& pre, Ray& ray, size_t ty, const Primitive* prim, size_t num, const void* geom) 
     {
       for (size_t i=0; i<num; i++) 
         if (occluded(pre,ray,prim[i],geom))
