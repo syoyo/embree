@@ -74,7 +74,7 @@ namespace embree
     /*! calculate bounds for range of primitives */
     static const NAABBox3fa computeAlignedBounds(BezierRefList& beziers, const LinearSpace3fa& space);
 
-    static const LinearSpace3fa computeHairSpace(BezierRefList& prims);
+    static const NAABBox3fa computeHairSpace(BezierRefList& prims);
 
     /*! builder entry point */
     void build(size_t threadIndex, size_t threadCount);

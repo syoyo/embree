@@ -68,11 +68,11 @@ namespace embree
     return NAABBox3fa(space,bounds);
   }
 
-  const LinearSpace3fa BVH4BuilderHair2::computeHairSpace(BezierRefList& prims)
+  const NAABBox3fa BVH4BuilderHair2::computeHairSpace(BezierRefList& prims)
   {
     size_t N = BezierRefList::block_iterator_unsafe(prims).size();
     if (N == 0)
-      return one; // FIXME: can cause problems with compression
+      return empty; // FIXME: can cause problems with compression
 
     float bestArea = inf;
     LinearSpace3fa bestSpace = one;
@@ -110,7 +110,7 @@ namespace embree
       }
       #endif*/
 
-    return bestSpace;
+    return NAABBox3fa(bestSpace,bestBounds);
   }
 
   void BVH4BuilderHair2::build(size_t threadIndex, size_t threadCount) 
@@ -287,9 +287,9 @@ namespace embree
     if (enableSpatialSplits) 
       bestSAH = min(bestSAH,spatial_binning_aligned_sah );
     
-    const LinearSpace3fa hairspace = computeHairSpace(beziers);
+    const NAABBox3fa hairspace = computeHairSpace(beziers);
     
-    ObjectSplitBinnerUnaligned object_binning_unaligned(hairspace,beziers,bezierCost);
+    ObjectSplitBinnerUnaligned object_binning_unaligned(hairspace.space,beziers,bezierCost);
     float object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*halfArea(nodeBounds.bounds);
     bestSAH = min(bestSAH,object_binning_unaligned_sah);
     
@@ -348,8 +348,6 @@ namespace embree
       aligned &= csplit[bestChild].aligned;
       PrimInfo linfo,rinfo;
       BezierRefList lbeziers,rbeziers; csplit[bestChild].split(threadIndex,&allocBezierRefs,cbeziers[bestChild],lbeziers,linfo,rbeziers,rinfo);
-      //PrimInfo linfo = computePrimInfo(lbeziers);
-      //PrimInfo rinfo = computePrimInfo(rbeziers);
       GeneralSplit lsplit; computeSplit(linfo,lbeziers,lsplit,linfo.geomBounds); // FIXME: ,linfo.geomBounds not correct
       GeneralSplit rsplit; computeSplit(rinfo,rbeziers,rsplit,rinfo.geomBounds);
       cbeziers[bestChild  ] = lbeziers; cpinfo[bestChild] = linfo; csplit[bestChild  ] = lsplit;
@@ -375,8 +373,7 @@ namespace embree
     {
       BVH4::UUNode* node = bvh->allocUUNode(threadIndex);
       for (size_t i=0; i<numChildren; i++) {
-        const LinearSpace3fa hairspace = computeHairSpace(cbeziers[i]);
-        const NAABBox3fa bounds = computeAlignedBounds(cbeziers[i],hairspace);
+        const NAABBox3fa bounds = computeHairSpace(cbeziers[i]);
         node->set(i,bounds);
         new (&task_o[i]) BuildTask(&node->child(i),task.depth+1,cbeziers[i],cpinfo[i],csplit[i],bounds);
       }
