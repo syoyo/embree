@@ -125,11 +125,30 @@ namespace embree
     SELECT_SYMBOL_AVX_AVX2(features,BVH4VirtualIntersector8Chunk);
   }
 
-  BVH4::BVH4 (const PrimitiveType& primTy, void* geometry)
-  : primTy(primTy), geometry(geometry), root(emptyNode),
-    numPrimitives(0), numVertices(0),
-    nodes(NULL), bytesNodes(0), primitives(NULL), bytesPrimitives(0) 
+  BVH4::BVH4 (const PrimitiveType& primTy0, void* geometry)
+    : primTy(primTy0), geometry(geometry), root(emptyNode), numPrimitives(0), numVertices(0), nodes(NULL), bytesNodes(0), primitives(NULL), bytesPrimitives(0) 
   {
+    for (size_t i=0; i<4; i++) primTys[i] = NULL;
+    primTys[0] = &primTy0;
+    alloc = new LinearAllocatorPerThread;
+  }
+
+  BVH4::BVH4 (const PrimitiveType& primTy0, const PrimitiveType& primTy1, void* geometry)
+    : primTy(primTy0), geometry(geometry), root(emptyNode), numPrimitives(0), numVertices(0), nodes(NULL), bytesNodes(0), primitives(NULL), bytesPrimitives(0) 
+  {
+    for (size_t i=0; i<4; i++) primTys[i] = NULL;
+    primTys[0] = &primTy0;
+    primTys[1] = &primTy1;
+    alloc = new LinearAllocatorPerThread;
+  }
+
+  BVH4::BVH4 (const PrimitiveType& primTy0, const PrimitiveType& primTy1, const PrimitiveType& primTy2, void* geometry)
+    : primTy(primTy0), geometry(geometry), root(emptyNode), numPrimitives(0), numVertices(0), nodes(NULL), bytesNodes(0), primitives(NULL), bytesPrimitives(0) 
+  {
+    for (size_t i=0; i<4; i++) primTys[i] = NULL;
+    primTys[0] = &primTy0;
+    primTys[1] = &primTy1;
+    primTys[2] = &primTy2;
     alloc = new LinearAllocatorPerThread;
   }
 

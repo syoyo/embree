@@ -31,38 +31,50 @@ namespace embree
     ALIGNED_CLASS;
   public:
     
-    /*! forward declaration of node type */
+    /*! forward declaration of node types */
     struct BaseNode;
     struct UANode;
+    struct CANode;
+    struct UUNode;
+    struct CUNode;
 
     /*! branching width of the tree */
     static const size_t N = 4;
 
-    /*! Number of address bits the Node and primitives are aligned
-        to. Maximally 2^alignment-2 many primitive blocks per leaf are
-        supported. */
-    static const size_t alignment = 4;
+    /*! some pointer decoration masks */
+    static const size_t deco_mask    = 0xF00000000000000FLL;  //!< these bits are used to decorate the pointer
+    static const size_t barrier_mask = 0x0000000000000008LL;  //!< barrier bit to mark nodes during build
+    static const size_t type_mask    = 0x0000000000000007LL;  //!< node and leaf type bits
+    static const size_t alignment    = 0x0000000000000010LL;  //!< required pointer alignment
 
-    /*! Masks the bits that store the number of items per leaf. */
-    static const size_t align_mask = (1 << alignment)-1;  
-    static const size_t items_mask = (1 << (alignment-1))-1;  
+    /*! node types */
+    static const size_t tyUA = 0;  //!< uncompressed axis aligned node
+    static const size_t tyUU = 1;  //!< uncompressed unaligned node
+    static const size_t tyCA = 2;  //!< compressed axis aligned node
+    static const size_t tyCU = 3;  //!< compressed unaligned node
+    static const size_t tyL0 = 4;  //!< first leaf node type
+    static const size_t maxLeafTypes = 4;             //!< maximal number of leaf types
 
     /*! Empty node */
-    static const size_t emptyNode = 1;
+    static const size_t emptyNode = 0x0000000000000004LL;
 
     /*! Invalid node, used as marker in traversal */
-    static const size_t invalidNode = (((size_t)-1) & (~items_mask)) | 1;
-      
+    static const size_t invalidNode = 0x0FFFFFFFFFFFFFF4LL;
+
     /*! Maximal depth of the BVH. */
     static const size_t maxBuildDepth = 32;
     static const size_t maxBuildDepthLeaf = maxBuildDepth+16;
     static const size_t maxDepth = maxBuildDepthLeaf+maxBuildDepthLeaf+maxBuildDepth;
     
     /*! Maximal number of primitive blocks in a leaf. */
-    static const size_t maxLeafBlocks = items_mask-1;
+    //static const size_t maxLeafBlocks = 15;
+    static const size_t maxLeafBlocks = 6;
 
     /*! Cost of one traversal step. */
-    static const int travCost = 1;
+    static const int travCost = 1; // FIXME: remove
+    static const int travCostAligned = 1;
+    static const int travCostUnaligned = 3;
+    static const int intCost = 6;
 
     /*! Pointer that points to a node or a list of primitives */
     struct NodeRef
@@ -78,45 +90,72 @@ namespace embree
 
        /*! Prefetches the node this reference points to */
       __forceinline void prefetch() const {
-	prefetchL1(((char*)ptr)+0*64);
-	prefetchL1(((char*)ptr)+1*64);
+	prefetchL1(((char*)(ptr & ~deco_mask))+0*64);
+	prefetchL1(((char*)(ptr & ~deco_mask))+1*64);
+	//prefetchL1(((char*)(ptr & ~deco_mask))+2*64);
+	//prefetchL1(((char*)(ptr & ~deco_mask))+3*64);
       }
 
       /*! Sets the barrier bit. */
-      __forceinline void setBarrier() { ptr |= (size_t)(1 << (alignment-1)); }
+      __forceinline void setBarrier() { ptr |= barrier_mask; }
       
       /*! Clears the barrier bit. */
-      __forceinline void clearBarrier() { ptr &= ~(size_t)(1 << (alignment-1)); }
+      __forceinline void clearBarrier() { ptr &= ~barrier_mask; }
 
       /*! Checks if this is an barrier. A barrier tells the top level tree rotations how deep to enter the tree. */
-      __forceinline int isBarrier() const { return (ptr >> (size_t)(alignment-1)) & 1; }
+      __forceinline bool isBarrier() const { return ptr & barrier_mask; }
 
       /*! checks if this is a leaf */
-      __forceinline int isLeaf() const { return (ptr & (size_t)align_mask) != 0; }
-      
+      __forceinline bool isLeaf() const { return (ptr & type_mask) >= tyL0; }
+
       /*! checks if this is a node */
-      __forceinline int isNode() const { return (ptr & (size_t)align_mask) == 0; }
+      __forceinline bool isNode() const { return (ptr & type_mask) < tyL0; }
       
-      /*! checks if this is a node */
-      __forceinline int isUANode() const { return (ptr & (size_t)align_mask) == 0; }
-      
+      /*! checks for different node types */
+      __forceinline bool isUANode() const { return (ptr & type_mask) == tyUA; }
+      __forceinline bool isCANode() const { return (ptr & type_mask) == tyCA; }
+      __forceinline bool isUUNode() const { return (ptr & type_mask) == tyUU; }
+      __forceinline bool isCUNode() const { return (ptr & type_mask) == tyCU; }
+
       /*! returns node pointer */
-      __forceinline       BaseNode* node()       { assert(isNode()); return (      BaseNode*)ptr; }
-      __forceinline const BaseNode* node() const { assert(isNode()); return (const BaseNode*)ptr; }
-      
+      __forceinline       BaseNode* node()       { assert(isNode()); return (      BaseNode*)(ptr & ~deco_mask); }
+      __forceinline const BaseNode* node() const { assert(isNode()); return (const BaseNode*)(ptr & ~deco_mask); }
+
       /*! returns node pointer */
-      __forceinline       BaseNode* getNode()       { assert(isNode()); return (      BaseNode*)ptr; }
-      __forceinline const BaseNode* getNode() const { assert(isNode()); return (const BaseNode*)ptr; }
-      
-      /*! returns node pointer */
+      __forceinline       BaseNode* getNode()       { assert(isNode()); return (      BaseNode*)(ptr & ~deco_mask); }
+      __forceinline const BaseNode* getNode() const { assert(isNode()); return (const BaseNode*)(ptr & ~deco_mask); }
+
+      /*! returns uncompressed axis aligned node pointer */
       __forceinline       UANode* getUANode()       { assert(isUANode()); return (      UANode*)ptr; }
       __forceinline const UANode* getUANode() const { assert(isUANode()); return (const UANode*)ptr; }
+
+      /*! returns compressed axis aligned node pointer */
+      __forceinline       CANode* getCANode()       { assert(isCANode()); return (      CANode*)(ptr & ~deco_mask); }
+      __forceinline const CANode* getCANode() const { assert(isCANode()); return (const CANode*)(ptr & ~deco_mask); }
+
+      /*! returns uncompressed unaligned node pointer */
+      __forceinline       UUNode* getUUNode()       { assert(isUUNode()); return (      UUNode*)(ptr & ~deco_mask); }
+      __forceinline const UUNode* getUUNode() const { assert(isUUNode()); return (const UUNode*)(ptr & ~deco_mask); }
+
+      /*! returns compressed unaligned node pointer */
+      __forceinline       CUNode* getCUNode()       { assert(isCUNode()); return (      CUNode*)(ptr & ~deco_mask); }
+      __forceinline const CUNode* getCUNode() const { assert(isCUNode()); return (const CUNode*)(ptr & ~deco_mask); }
       
+      /*! returns leaf pointer */
+      __forceinline char* getLeaf(size_t& num, size_t& type) const {
+        assert(isLeaf());
+        num  = ptr >> 60;
+        type = (ptr & type_mask) - tyL0;
+        return (char*)(ptr & ~deco_mask);
+        //return (char*)(((ptr >> 4) << 8) >> 4); //~deco_mask);
+      }
+
       /*! returns leaf pointer */
       __forceinline char* leaf(size_t& num) const {
         assert(isLeaf());
-        num = (ptr & (size_t)items_mask)-1;
-        return (char*)(ptr & ~(size_t)align_mask);
+        num  = ptr >> 60;
+        return (char*)(ptr & ~deco_mask);
+        //return (char*)(((ptr >> 4) << 8) >> 4); //~deco_mask);
       }
 
     private:
@@ -539,10 +578,24 @@ namespace embree
   public:
 
     /*! BVH4 default constructor. */
-    BVH4 (const PrimitiveType& primTy, void* geometry = NULL);
+    BVH4 (const PrimitiveType& primTy0, void* geometry = NULL);
+    BVH4 (const PrimitiveType& primTy0, const PrimitiveType& primTy1, void* geometry = NULL);
+    BVH4 (const PrimitiveType& primTy0, const PrimitiveType& primTy1, const PrimitiveType& primTy2, void* geometry = NULL);
 
     /*! BVH4 destruction */
     ~BVH4 ();
+
+    /*! returns name of BVH */
+    std::string name() const {
+      std::string str = "BVH4<";
+      if (primTys[0]) str += primTys[0]->name;
+      for (size_t i=1; i<4; i++) {
+        str += ",";
+        if (primTys[i]) str += primTys[i]->name;
+      }
+      str+= ">";
+      return str;
+    }
 
     /*! BVH4 instantiations */
     static Accel* BVH4Bezier1i(Scene* scene);
@@ -583,23 +636,42 @@ namespace embree
 
     Ref<LinearAllocatorPerThread> alloc; // FIXME: why using reference?
 
+
     __forceinline UANode* allocUANode(size_t thread) {
-      UANode* node = (UANode*) alloc->malloc(thread,sizeof(UANode),1 << 7); node->clear(); return node; // FIXME: why 7 bits alinged, and not 4 bits
+      UANode* node = (UANode*) alloc->malloc(thread,sizeof(UANode),1 << 7); node->clear(); return node;
     }
 
+    __forceinline CANode* allocCANode(size_t thread) {
+      CANode* node = (CANode*) alloc->malloc(thread,sizeof(CANode),1 << 7); node->clear(); return node;
+    }
+
+    __forceinline UUNode* allocUUNode(size_t thread) {
+      UUNode* node = (UUNode*) alloc->malloc(thread,sizeof(UUNode),1 << 7); node->clear(); return node;
+    }
+
+    __forceinline CUNode* allocCUNode(size_t thread) {
+      CUNode* node = (CUNode*) alloc->malloc(thread,sizeof(CUNode),1 << 7); node->clear(); return node;
+    }
+
+    /*__forceinline char* allocPrimitiveBlocks(size_t thread, size_t ty, size_t num) {
+      return (char*) alloc->malloc(thread,num*primTys[ty]->bytes,alignment);
+      }*/
+
     __forceinline char* allocPrimitiveBlocks(size_t thread, size_t num) {
-      return (char*) alloc->malloc(thread,num*primTy.bytes,1 << 6); // FIXME: why 6 bits alinged, and not 4 bits
+      return (char*) alloc->malloc(thread,num*primTy.bytes,1 << 6);
     }
 
     /*! Encodes a node */
-    __forceinline NodeRef encodeNode(UANode* node) { 
-      return NodeRef((size_t) node);
-    }
+    __forceinline NodeRef encodeNode(UANode* node) { assert(((size_t)node & deco_mask) == 0); return NodeRef((size_t)node | tyUA); }
+    __forceinline NodeRef encodeNode(CANode* node) { assert(((size_t)node & deco_mask) == 0); return NodeRef((size_t)node | tyCA); }
+    __forceinline NodeRef encodeNode(UUNode* node) { assert(((size_t)node & deco_mask) == 0); return NodeRef((size_t)node | tyUU); }
+    __forceinline NodeRef encodeNode(CUNode* node) { assert(((size_t)node & deco_mask) == 0); return NodeRef((size_t)node | tyCU); }
     
     /*! Encodes a leaf */
-    __forceinline NodeRef encodeLeaf(char* tri, size_t num) {
-      assert(!((size_t)tri & align_mask)); 
-      return NodeRef((size_t)tri | (1+min(num,(size_t)maxLeafBlocks)));
+    __forceinline NodeRef encodeLeaf(char* tri, size_t num, size_t type = 0) {
+      assert(((size_t)tri & deco_mask) == 0); 
+      assert(type < maxLeafTypes);
+      return NodeRef((size_t)tri | (tyL0 + type) | (min(num,maxLeafBlocks) << 60));
     }
 
   public:
@@ -615,6 +687,8 @@ namespace embree
 
   public:
     const PrimitiveType& primTy;       //!< primitive type stored in the BVH
+    const PrimitiveType* primTys[4];    //!< primitive types stored in the BVH
+    
     void* geometry;                    //!< pointer to additional data for primitive intersector
     NodeRef root;                      //!< Root node
     size_t numPrimitives;
