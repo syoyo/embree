@@ -24,7 +24,7 @@ namespace embree
   class BVH4Rotate
   {
   public:
-    typedef BVH4::Node Node;
+    //typedef BVH4::Node Node;
     typedef BVH4::NodeRef NodeRef;
 
   public:

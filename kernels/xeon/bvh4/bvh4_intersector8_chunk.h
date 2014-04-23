@@ -30,7 +30,7 @@ namespace embree
       /* shortcuts for frequently used types */
       typedef typename PrimitiveIntersector::Primitive Primitive;
       typedef typename BVH4::NodeRef NodeRef;
-      typedef typename BVH4::Node Node;
+      //typedef typename BVH4::Node Node;
       static const size_t stackSize = 4*BVH4::maxDepth+1;
       
     public:

@@ -30,8 +30,8 @@ namespace embree
     
     __forceinline bool compare(const BVH4::NodeRef* a, const BVH4::NodeRef* b)
     {
-      int sa = *(size_t*)a->node();
-      int sb = *(size_t*)b->node();
+      size_t sa = a->getNode()->children[4];
+      size_t sb = b->getNode()->children[4];
       return sa < sb;
     }
     
@@ -89,14 +89,14 @@ namespace embree
     {
       if (ref.isNode())
       {
-        Node* node = ref.node();
+	BVH4::BaseNode* node = ref.node();
         size_t n = 0;
         for (size_t i=0; i<BVH4::N; i++) {
           BVH4::NodeRef& child = node->child(i);
           if (child == BVH4::emptyNode) continue;
           n += annotate_tree_sizes(child); 
         }
-        *((size_t*)node) = n;
+        node->children[4] = n;
         return n;
       }
       else
@@ -119,7 +119,7 @@ namespace embree
         std::pop_heap(roots.begin(), roots.end(), compare);
         BVH4::NodeRef* node = roots.back();
         roots.pop_back();
-        if (*(size_t*)node->node() < block_size) 
+        if (node->getNode()->children[4] < block_size) 
           break;
         
         for (size_t i=0; i<BVH4::N; i++) {
@@ -141,8 +141,8 @@ namespace embree
     
     __forceinline BBox3fa BVH4Refit::node_bounds(NodeRef& ref)
     {
-      if (ref.isNode())
-        return ref.node()->bounds();
+      if (ref.isUANode())
+        return ref.getUANode()->bounds();
       else
         return leaf_bounds(ref);
     }
@@ -154,7 +154,7 @@ namespace embree
         return leaf_bounds(ref);
       
       /* recurse if this is an internal node */
-      Node* node = ref.node();
+      BVH4::UANode* node = ref.getUANode();
       const BBox3fa bounds0 = recurse_bottom(node->child(0));
       const BBox3fa bounds1 = recurse_bottom(node->child(1));
       const BBox3fa bounds2 = recurse_bottom(node->child(2));
@@ -197,7 +197,7 @@ namespace embree
         return leaf_bounds(ref);
       
       /* recurse if this is an internal node */
-      Node* node = ref.node();
+      BVH4::UANode* node = ref.getUANode();
       const BBox3fa bounds0 = recurse_top(node->child(0));
       const BBox3fa bounds1 = recurse_top(node->child(1));
       const BBox3fa bounds2 = recurse_top(node->child(2));

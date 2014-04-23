@@ -28,7 +28,7 @@ namespace embree
       ALIGNED_CLASS;
       
       /*! Type shortcuts */
-      typedef BVH4::Node    Node;
+      //typedef BVH4::Node    Node;
       typedef BVH4::NodeRef NodeRef;
       typedef GlobalAllocator::ThreadAllocator Allocator;
       

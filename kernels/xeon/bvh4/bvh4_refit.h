@@ -28,7 +28,7 @@ namespace embree
     public:
       
       /*! Type shortcuts */
-      typedef BVH4::Node    Node;
+      //typedef BVH4::Node    Node;
       typedef BVH4::NodeRef NodeRef;
       
     public:

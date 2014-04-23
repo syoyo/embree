@@ -27,7 +27,7 @@ namespace embree
     class BVH4BuilderFast : public Builder
     {
       ALIGNED_CLASS;
-      typedef BVH4::Node Node;
+      //typedef BVH4::Node Node;
       typedef BVH4::NodeRef NodeRef;
       typedef GlobalAllocator::ThreadAllocator Allocator;
       static const size_t SIZE_WORK_STACK = 64;

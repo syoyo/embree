@@ -604,7 +604,7 @@ namespace embree
 #endif
     
     size_t bytesAllocated = 0; //numAllocatedNodes * sizeof(BVH4::Node) + numAllocatedPrimitives * primTy.bytes;
-    size_t bytesReserved  = numReservedNodes * sizeof(BVH4::Node) + numReservedPrimitives * primTy.bytes;
+    size_t bytesReserved  = numReservedNodes * sizeof(BVH4::UANode) + numReservedPrimitives * primTy.bytes; 
     bytesReserved         = (bytesReserved+blockSize-1)/blockSize*blockSize;
 
     root = emptyNode;
@@ -617,7 +617,7 @@ namespace embree
     if (node.isBarrier())
       node.clearBarrier();
     else if (!node.isLeaf()) {
-      Node* n = node.node();
+      BaseNode* n = node.node();
       for (size_t c=0; c<4; c++)
         clearBarrier(n->child(c));
     }

@@ -249,7 +249,7 @@ namespace embree
         if (ref.isLeaf()) break;
         refs.pop_back();    
         
-        BVH4::Node* node = ref.node();
+        BVH4::UANode* node = ref.getUANode();
         for (size_t i=0; i<4; i++) {
           if (node->child(i) == BVH4::emptyNode) continue;
           refs.push_back(BuildRef(node->bounds(i),node->child(i)));
@@ -303,17 +303,17 @@ namespace embree
         /* open all nodes that are considered large in this iteration */
         while (end+3 <= end1)
         {
-		  if (end-start == 0) break;
+	  if (end-start == 0) break;
           std::pop_heap(&prefs1[start],&prefs1[end]); 
           BVH4::NodeRef ref = prefs1[end-1].node;
           float vol = prefs1[end-1].lower.w;
-		  if (ref.isLeaf() || vol < 0.5f*max_volume) {
-			std::push_heap(&prefs1[start],&prefs1[end]); 
-			break;
-		  }
+	  if (ref.isLeaf() || vol < 0.5f*max_volume) {
+	    std::push_heap(&prefs1[start],&prefs1[end]); 
+	    break;
+	  }
           end--;
           
-          BVH4::Node* node = ref.node();
+          BVH4::UANode* node = ref.getUANode();
           for (size_t i=0; i<4; i++) {
             if (node->child(i) == BVH4::emptyNode) continue;
             prefs1[end++] = BuildRef(node->bounds(i),node->child(i));
@@ -431,7 +431,7 @@ namespace embree
       split_fallback2(&refs[0],record1,children[2],children[3]);
       
       /* allocate next four nodes */
-      BVH4::Node* node = bvh->allocNode(threadIndex);
+      BVH4::UANode* node = bvh->allocUANode(threadIndex);
       *(NodeRef*)current.parentNode = bvh->encodeNode(node);
       
       /* recurse into each child */
@@ -517,7 +517,7 @@ namespace embree
       } while (numChildren < 4);
       
       /* recurse */
-      BVH4::Node* node = bvh->allocNode(threadID);
+      BVH4::UANode* node = bvh->allocUANode(threadID);
       for (ssize_t i=numChildren-1; i>=0; i--) {
         childTasks[i].parentNode = (size_t)&node->child(i);
         recurse(depth+1,childTasks[i],mode,threadID,numThreads);

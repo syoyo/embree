@@ -226,9 +226,9 @@ namespace embree
         size_t numReservedPrimitives = 1.5*numAllocatedPrimitives;
 #endif
         bytesMorton = ((numPrimitives+7)&(-8)) * sizeof(MortonID32Bit);
-        size_t bytesAllocatedNodes      = numAllocatedNodes * sizeof(BVH4::Node);
+        size_t bytesAllocatedNodes      = numAllocatedNodes * sizeof(BVH4::UANode);
         size_t bytesAllocatedPrimitives = numAllocatedPrimitives * bvh->primTy.bytes;
-        size_t bytesReservedNodes       = numReservedNodes * sizeof(BVH4::Node);
+        size_t bytesReservedNodes       = numReservedNodes * sizeof(BVH4::UANode);
         size_t bytesReservedPrimitives  = numReservedPrimitives * bvh->primTy.bytes;
         size_t blocksReservedNodes      = (bytesReservedNodes     +Allocator::blockSize-1)/Allocator::blockSize;
         size_t blocksReservedPrimitives = (bytesReservedPrimitives+Allocator::blockSize-1)/Allocator::blockSize;
@@ -723,7 +723,7 @@ namespace embree
       split_fallback(record1,children[2],children[3]);
       
       /* allocate node */
-      Node* node = (Node*) nodeAlloc.malloc(sizeof(Node)); node->clear();
+      BVH4::UANode* node = (BVH4::UANode*) nodeAlloc.malloc(sizeof(BVH4::UANode)); node->clear();
       *current.parent = bvh->encodeNode(node);
       
       /* recurse into each child */
@@ -846,7 +846,7 @@ namespace embree
       }
       
       /* allocate node */
-      Node* node = (Node*) nodeAlloc.malloc(sizeof(Node)); node->clear();
+      BVH4::UANode* node = (BVH4::UANode*) nodeAlloc.malloc(sizeof(BVH4::UANode)); node->clear();
       *current.parent = bvh->encodeNode(node);
       
       /* recurse into each child */
@@ -906,8 +906,8 @@ namespace embree
     
     __forceinline BBox3fa BVH4BuilderMorton::node_bounds(NodeRef& ref) const
     {
-      if (ref.isNode())
-        return ref.node()->bounds();
+      if (ref.isUANode())
+        return ref.getUANode()->bounds();
       else
         return leafBounds(ref);
     }
@@ -929,7 +929,7 @@ namespace embree
 	    return leafBounds(ref);
       
       /* recurse if this is an internal node */
-      Node* node = ref.node();
+      BVH4::UANode* node = ref.getUANode();
       const BBox3fa bounds0 = refit_toplevel(node->child(0));
       const BBox3fa bounds1 = refit_toplevel(node->child(1));
       const BBox3fa bounds2 = refit_toplevel(node->child(2));

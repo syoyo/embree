@@ -70,12 +70,13 @@ namespace embree
         while (1)
         {
           /* test if this is a leaf node */
-          if (unlikely(curNode.isLeaf()))
-            break;
+          //if (unlikely(curNode.isLeaf()))
+	  if (unlikely(!curNode.isUANode()))
+	    break;
           
           const avxb valid_node = ray_tfar > curDist;
           STAT3(normal.trav_nodes,1,popcnt(valid_node),8);
-          const Node* __restrict__ const node = curNode.node();
+          const BVH4::UANode* __restrict__ const node = curNode.getUANode();
           
           /* pop of next node */
           assert(sptr_node > stack_node);
@@ -199,12 +200,13 @@ namespace embree
         while (1)
         {
           /* test if this is a leaf node */
-          if (unlikely(curNode.isLeaf()))
-            break;
+          //if (unlikely(curNode.isLeaf()))
+	  if (unlikely(!curNode.isUANode()))
+	    break;
           
           const avxb valid_node = ray_tfar > curDist;
           STAT3(shadow.trav_nodes,1,popcnt(valid_node),8);
-          const Node* __restrict__ const node = curNode.node();
+          const BVH4::UANode* __restrict__ const node = curNode.getUANode();
           
           /* pop of next node */
           assert(sptr_node > stack_node);

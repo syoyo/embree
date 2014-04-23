@@ -31,7 +31,7 @@ namespace embree
       /* shortcuts for frequently used types */
       typedef typename PrimitiveIntersector8::Primitive Primitive;
       typedef typename BVH4::NodeRef NodeRef;
-      typedef typename BVH4::Node Node;
+      //typedef typename BVH4::Node Node;
       typedef StackItemT<NodeRef> StackItem;
       static const size_t stackSizeSingle = 1+3*BVH4::maxDepth;
       static const size_t stackSizeChunk = 4*BVH4::maxDepth+1;
@@ -73,26 +73,28 @@ namespace embree
 		while (true)
 		  {
 		    /*! stop if we found a leaf */
-		    if (unlikely(cur.isLeaf())) break;
+		    //if (unlikely(cur.isLeaf())) 
+		    if (unlikely(!cur.isUANode()))
+			break;
 		    STAT3(normal.trav_nodes, 1, 1, 1);
 
 		    /*! single ray intersection with 4 boxes */
-		    const Node* node = cur.node();
+		    const BVH4::UANode* node = cur.getUANode();
 		    const size_t farX = nearX ^ 16, farY = nearY ^ 16, farZ = nearZ ^ 16;
 #if defined (__AVX2__)
-		    const ssef tNearX = msub(load4f((const char*)node + nearX), rdir.x, org_rdir.x);
-		    const ssef tNearY = msub(load4f((const char*)node + nearY), rdir.y, org_rdir.y);
-		    const ssef tNearZ = msub(load4f((const char*)node + nearZ), rdir.z, org_rdir.z);
-		    const ssef tFarX = msub(load4f((const char*)node + farX), rdir.x, org_rdir.x);
-		    const ssef tFarY = msub(load4f((const char*)node + farY), rdir.y, org_rdir.y);
-		    const ssef tFarZ = msub(load4f((const char*)node + farZ), rdir.z, org_rdir.z);
+		    const ssef tNearX = msub(load4f((const char*)node+32+nearX), rdir.x, org_rdir.x);
+		    const ssef tNearY = msub(load4f((const char*)node+32+nearY), rdir.y, org_rdir.y);
+		    const ssef tNearZ = msub(load4f((const char*)node+32+nearZ), rdir.z, org_rdir.z);
+		    const ssef tFarX = msub(load4f((const char*)node+32+farX), rdir.x, org_rdir.x);
+		    const ssef tFarY = msub(load4f((const char*)node+32+farY), rdir.y, org_rdir.y);
+		    const ssef tFarZ = msub(load4f((const char*)node+32+farZ), rdir.z, org_rdir.z);
 #else
-		    const ssef tNearX = (load4f((const char*)node + nearX) - org.x) * rdir.x;
-		    const ssef tNearY = (load4f((const char*)node + nearY) - org.y) * rdir.y;
-		    const ssef tNearZ = (load4f((const char*)node + nearZ) - org.z) * rdir.z;
-		    const ssef tFarX = (load4f((const char*)node + farX) - org.x) * rdir.x;
-		    const ssef tFarY = (load4f((const char*)node + farY) - org.y) * rdir.y;
-		    const ssef tFarZ = (load4f((const char*)node + farZ) - org.z) * rdir.z;
+		    const ssef tNearX = (load4f((const char*)node+32+nearX) - org.x) * rdir.x;
+		    const ssef tNearY = (load4f((const char*)node+32+nearY) - org.y) * rdir.y;
+		    const ssef tNearZ = (load4f((const char*)node+32+nearZ) - org.z) * rdir.z;
+		    const ssef tFarX = (load4f((const char*)node+32+farX) - org.x) * rdir.x;
+		    const ssef tFarY = (load4f((const char*)node+32+farY) - org.y) * rdir.y;
+		    const ssef tFarZ = (load4f((const char*)node+32+farZ) - org.z) * rdir.z;
 #endif
 
 #if defined(__SSE4_1__)
@@ -200,11 +202,13 @@ namespace embree
 		while (true)
 		  {
 		    /*! stop if we found a leaf */
-		    if (unlikely(cur.isLeaf())) break;
+		    //if (unlikely(cur.isLeaf()))
+		    if (unlikely(!cur.isUANode()))
+			break;
 		    STAT3(shadow.trav_nodes,1,1,1);
           
 		    /*! single ray intersection with 4 boxes */
-		    const Node* node = cur.node();
+		    const BVH4::UANode* node = cur.getUANode();
 		    const size_t farX  = nearX ^ 16, farY  = nearY ^ 16, farZ  = nearZ ^ 16;
 #if defined (__AVX2__)
 		    const ssef tNearX = msub(load4f((const char*)node+32+nearX), rdir.x, org_rdir.x);

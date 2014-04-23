@@ -30,7 +30,7 @@ namespace embree
 
   size_t BVH4Statistics::bytesUsed()
   {
-    size_t bytesNodes = numNodes*sizeof(Node);
+    size_t bytesNodes = numNodes*sizeof(BVH4::UANode);
     size_t bytesTris  = numPrimBlocks*bvh->primTy.bytes;
     size_t numVertices = bvh->numVertices;
     size_t bytesVertices = numVertices*sizeof(Vec3fa); 
@@ -40,7 +40,7 @@ namespace embree
   std::string BVH4Statistics::str()  
   {
     std::ostringstream stream;
-    size_t bytesNodes = numNodes*sizeof(Node);
+    size_t bytesNodes = numNodes*sizeof(BVH4::UANode);
     size_t bytesTris  = numPrimBlocks*bvh->primTy.bytes;
     size_t numVertices = bvh->numVertices;
     size_t bytesVertices = numVertices*sizeof(Vec3fa); 
@@ -83,7 +83,7 @@ namespace embree
       numNodes++;
       depth = 0;
       size_t cdepth = 0;
-      Node* n = node.node();
+      BVH4::UANode* n = node.getUANode();
       bvhSAH += A*BVH4::travCost;
       for (size_t i=0; i<BVH4::N; i++) {
         statistics(n->child(i),n->bounds(i),cdepth); 

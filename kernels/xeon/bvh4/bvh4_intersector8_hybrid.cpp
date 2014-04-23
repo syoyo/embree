@@ -101,8 +101,9 @@ namespace embree
         {
 
           /* test if this is a leaf node */
-          if (unlikely(curNode.isLeaf()))
-            break;
+          //if (unlikely(curNode.isLeaf()))
+	  if (unlikely(!curNode.isUANode()))
+	    break;
 
 #if defined(SWITCH_DURING_DOWN_TRAVERSAL)
           // seems to be the best place for testing utilization
@@ -118,7 +119,7 @@ namespace embree
 
           STAT3(normal.trav_nodes,1,popcnt(ray_tfar > curDist),8);
 
-          const Node* __restrict__ const node = curNode.node();
+          const BVH4::UANode* __restrict__ const node = curNode.getUANode();
           
           /* pop of next node */
           assert(sptr_node > stack_node);
@@ -279,12 +280,13 @@ namespace embree
         {
 
           /* test if this is a leaf node */
-          if (unlikely(curNode.isLeaf()))
-            break;
+          //if (unlikely(curNode.isLeaf()))
+	  if (unlikely(!curNode.isUANode()))
+	    break;
           
           STAT3(shadow.trav_nodes,1,popcnt(ray_tfar > curDist),8);
 
-          const Node* __restrict__ const node = curNode.node();
+          const BVH4::UANode* __restrict__ const node = curNode.getUANode();
           
           /* pop of next node */
           assert(sptr_node > stack_node);

@@ -30,7 +30,7 @@ namespace embree
     /*! nothing to rotate if we reached a leaf node. */
     if (parentRef.isBarrier()) return 0;
     if (parentRef.isLeaf()) return 0;
-    Node* parent = parentRef.node();
+    BVH4::UANode* parent = parentRef.getUANode();
 
     /*! rotate all children first */
     ssei cdepth;
@@ -57,7 +57,7 @@ namespace embree
       /*! ignore leaf nodes as we cannot descent into them */
       if (parent->child(c2).isBarrier()) continue;
       if (parent->child(c2).isLeaf()) continue;
-      Node* child2 = parent->child(c2).node();
+      BVH4::UANode* child2 = parent->child(c2).getUANode();
 
       /*! transpose child bounds */
       BBox<ssef> child2c0,child2c1,child2c2,child2c3;
@@ -122,7 +122,7 @@ namespace embree
     if (bestChild1 == -1) return 1+reduce_max(cdepth);
       
     /*! perform the best found tree rotation */
-    Node* child2 = parent->child(bestChild2).node();
+    BVH4::UANode* child2 = parent->child(bestChild2).getUANode();
     BVH4::swap(parent,bestChild1,child2,bestChild2Child);
     parent->set(bestChild2,child2->bounds());
     BVH4::compact(parent);

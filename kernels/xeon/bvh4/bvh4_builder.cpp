@@ -147,7 +147,7 @@ namespace embree
     FallBackSplitter<Heuristic>::split(threadIndex,&alloc,source,prims1,cinfo1,cprims[2],cinfo[2],cprims[3],cinfo[3]);
 
     /*! create an inner node */
-    Node* node = bvh->allocNode(threadIndex);
+    BVH4::UANode* node = bvh->allocUANode(threadIndex);
     for (size_t i=0; i<4; i++) node->set(i,cinfo[i].geomBounds,createLargeLeaf(threadIndex,cprims[i],cinfo[i],depth+1));
     return bvh->encodeNode(node);
   }  
@@ -235,7 +235,7 @@ namespace embree
     } while (numChildren < BVH4::N);
     
     /*! create an inner node */
-    Node* node = parent->bvh->allocNode(threadIndex);
+    BVH4::UANode* node = parent->bvh->allocUANode(threadIndex);
     for (size_t i=0; i<numChildren; i++) node->set(i,cinfo[i].geomBounds,recurse(depth+1,cprims[i],cinfo[i],csplit[i]));
     return parent->bvh->encodeNode(node);
   }
@@ -297,7 +297,7 @@ namespace embree
     } while (numChildren < BVH4::N);
     
     /*! create an inner node */
-    Node* node = parent->bvh->allocNode(threadIndex);
+    BVH4::UANode* node = parent->bvh->allocUANode(threadIndex);
     dst = parent->bvh->encodeNode(node);
     for (size_t i=0; i<numChildren; i++) {
       node->set(i,cinfo[i].geomBounds,0);
@@ -366,7 +366,7 @@ namespace embree
     }
     
     /*! create an inner node */
-    Node* node = parent->bvh->allocNode(threadIndex);
+    BVH4::UANode* node = parent->bvh->allocUANode(threadIndex);
     dst = parent->bvh->encodeNode(node);
     for (size_t i=0; i<numChildren; i++) {
       node->set(i,cinfo[i].geomBounds,0);

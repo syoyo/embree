@@ -196,10 +196,10 @@ namespace embree
 #endif
 
         bytesPrims = numPrimitives * sizeof(PrimRef);
-        size_t bytesAllocatedNodes      = numAllocatedNodes * sizeof(BVH4::Node);
+        size_t bytesAllocatedNodes      = numAllocatedNodes * sizeof(BVH4::UANode);
         size_t bytesAllocatedPrimitives = numAllocatedPrimitives * bvh->primTy.bytes;
         bytesAllocatedPrimitives        = max(bytesAllocatedPrimitives,bytesPrims); // required as we store prims into primitive array for parallel splits
-        size_t bytesReservedNodes       = numReservedNodes * sizeof(BVH4::Node);
+        size_t bytesReservedNodes       = numReservedNodes * sizeof(BVH4::UANode);
         size_t bytesReservedPrimitives  = numReservedPrimitives * bvh->primTy.bytes;
         size_t blocksReservedNodes      = (bytesReservedNodes     +Allocator::blockSize-1)/Allocator::blockSize;
         size_t blocksReservedPrimitives = (bytesReservedPrimitives+Allocator::blockSize-1)/Allocator::blockSize;
@@ -556,7 +556,7 @@ namespace embree
       split_fallback(prims,record1,children[2],children[3]);
 
       /* allocate node */
-      Node* node = (Node*) nodeAlloc.malloc(sizeof(Node)); node->clear();
+      BVH4::UANode* node = (BVH4::UANode*) nodeAlloc.malloc(sizeof(BVH4::UANode)); node->clear();
       *(NodeRef*)current.parentNode = bvh->encodeNode(node);
       
       /* recurse into each child */
@@ -639,7 +639,7 @@ namespace embree
       }
       
       /* allocate node */
-      Node* node = (Node*) nodeAlloc.malloc(sizeof(Node)); node->clear();
+      BVH4::UANode* node = (BVH4::UANode*) nodeAlloc.malloc(sizeof(BVH4::UANode)); node->clear();
       *(NodeRef*)current.parentNode = bvh->encodeNode(node);
       
       /* recurse into each child */

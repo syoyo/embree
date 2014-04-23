@@ -34,7 +34,7 @@ namespace embree
     public:
       
       /*! Type shortcuts */
-      typedef BVH4::Node    Node;
+      //typedef BVH4::Node    Node;
       typedef BVH4::NodeRef NodeRef;
       static const size_t SIZE_WORK_STACK = 64;
 

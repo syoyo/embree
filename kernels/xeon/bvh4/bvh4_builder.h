@@ -38,7 +38,7 @@ namespace embree
   public:
 
     /*! Type shortcuts */
-    typedef typename BVH4::Node    Node;
+    //typedef typename BVH4::Node    Node;
     typedef typename BVH4::NodeRef NodeRef;
 
     /*! Split type of the split heuristic. */

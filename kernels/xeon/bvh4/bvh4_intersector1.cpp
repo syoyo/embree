@@ -91,11 +91,13 @@ namespace embree
         while (true)
         {
           /*! stop if we found a leaf */
-          if (unlikely(cur.isLeaf())) break;
+          //if (unlikely(cur.isLeaf())) 
+	  if (unlikely(!cur.isUANode()))
+	      break;
           STAT3(normal.trav_nodes,1,1,1);
           
           /*! single ray intersection with 4 boxes */
-          const Node* node = cur.node();
+          const BVH4::UANode* node = cur.getUANode();
           const size_t farX  = nearX ^ 16, farY  = nearY ^ 16, farZ  = nearZ ^ 16;
 #if defined (__AVX2__)
           const ssef tNearX = msub(load4f((const char*)node+32+nearX), rdir.x, org_rdir.x);
@@ -240,11 +242,13 @@ namespace embree
         while (true)
         {
           /*! stop if we found a leaf */
-          if (unlikely(cur.isLeaf())) break;
+          //if (unlikely(cur.isLeaf())) 
+	  if (unlikely(!cur.isUANode()))
+	      break;
           STAT3(shadow.trav_nodes,1,1,1);
           
           /*! single ray intersection with 4 boxes */
-          const Node* node = cur.node();
+          const BVH4::UANode* node = cur.getUANode();
           const size_t farX  = nearX ^ 16, farY  = nearY ^ 16, farZ  = nearZ ^ 16;
 #if defined (__AVX2__)
           const ssef tNearX = msub(load4f((const char*)node+32+nearX), rdir.x, org_rdir.x);

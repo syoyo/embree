@@ -22,7 +22,7 @@ namespace embree
 {
   class BVH4Statistics 
   {
-    typedef BVH4::Node Node;
+    //typedef BVH4::Node Node;
     typedef BVH4::NodeRef NodeRef;
 
   public:
