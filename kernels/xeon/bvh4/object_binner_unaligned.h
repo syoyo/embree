@@ -53,9 +53,9 @@ namespace embree
       /*! return SAH cost of performing the split */
       __forceinline float splitSAH() const { return cost; } 
 
-      void split(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims, TriRefList& rprims);
+      void split(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims, PrimInfo& linfo, TriRefList& rprims, PrimInfo& rinfo);
 
-      void split(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims, BezierRefList& rprims);
+      void split(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims, PrimInfo& linfo, BezierRefList& rprims, PrimInfo& rinfo);
 
     public:
       Mapping mapping;    //!< Mapping to bins

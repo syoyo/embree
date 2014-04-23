@@ -242,8 +242,13 @@ namespace embree
     assert(((ssize_t)split.numSpatialSplits) >= 0);
     }
       
-  void SpatialSplit::Split::split(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims_o, TriRefList& rprims_o) const
+  void SpatialSplit::Split::split(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, 
+				  TriRefList& lprims_o, PrimInfo& linfo, TriRefList& rprims_o, PrimInfo& rinfo) const
   {
+    size_t lnum = 0, rnum = 0;
+    BBox3fa lgeomBounds = empty, rgeomBounds = empty;
+    BBox3fa lcentBounds = empty, rcentBounds = empty;
+
     TriRefList::item* lblock = lprims_o.insert(alloc->malloc(threadIndex));
     TriRefList::item* rblock = rprims_o.insert(alloc->malloc(threadIndex));
     
@@ -258,6 +263,10 @@ namespace embree
         /* sort to the left side */
         if (bounds.lower[dim] <= pos && bounds.upper[dim] <= pos)
         {
+	  lgeomBounds.extend(bounds);
+	  lcentBounds.extend(center2(bounds));
+	  lnum++;
+
           if (likely(lblock->insert(prim))) continue; 
           lblock = lprims_o.insert(alloc->malloc(threadIndex));
           lblock->insert(prim);
@@ -267,6 +276,10 @@ namespace embree
         /* sort to the right side */
         if (bounds.lower[dim] >= pos && bounds.upper[dim] >= pos)
         {
+	  rgeomBounds.extend(bounds);
+	  rcentBounds.extend(center2(bounds));
+	  rnum++;
+
           if (likely(rblock->insert(prim))) continue;
           rblock = rprims_o.insert(alloc->malloc(threadIndex));
           rblock->insert(prim);
@@ -283,10 +296,18 @@ namespace embree
         PrimRef left,right;
         splitTriangle(prim,dim,pos,v0,v1,v2,left,right);
 
+	lgeomBounds.extend(bounds);
+	lcentBounds.extend(center2(bounds));
+	lnum++;
+
         if (!lblock->insert(left)) {
           lblock = lprims_o.insert(alloc->malloc(threadIndex));
           lblock->insert(left);
         }
+
+	rgeomBounds.extend(bounds);
+	rcentBounds.extend(center2(bounds));
+	rnum++;
         
         if (!rblock->insert(right)) {
           rblock = rprims_o.insert(alloc->malloc(threadIndex));
@@ -295,10 +316,25 @@ namespace embree
       }
       alloc->free(threadIndex,block);
     }
+
+    linfo.geomBounds.extend(lgeomBounds);
+    linfo.centBounds.extend(lcentBounds);
+    linfo.numTriangles += lnum;
+    linfo.num += lnum;
+
+    rinfo.geomBounds.extend(rgeomBounds);
+    rinfo.centBounds.extend(rcentBounds);
+    rinfo.numTriangles += rnum;
+    rinfo.num += rnum;
   }
 
-  void SpatialSplit::Split::split(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims_o, BezierRefList& rprims_o) const
+  void SpatialSplit::Split::split(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, 
+				  BezierRefList& lprims_o, PrimInfo& linfo, BezierRefList& rprims_o, PrimInfo& rinfo) const
   {
+    size_t lnum = 0, rnum = 0;
+    BBox3fa lgeomBounds = empty, rgeomBounds = empty;
+    BBox3fa lcentBounds = empty, rcentBounds = empty;
+
     /* calculate splitting plane */
     //const Vec3fa plane(space.vx[dim],space.vy[dim],space.vz[dim],-pos);
     const Vec3fa plane(dim == 0,dim == 1,dim == 2,-pos); // FIXME: optimize
@@ -312,12 +348,17 @@ namespace embree
       for (size_t i=0; i<block->size(); i++) 
       {
         const Bezier1& prim = block->at(i); 
+	const BBox3fa bounds = prim.bounds();
         const float p0p = prim.p0[dim]-pos; //dot(prim.p0,plane)+plane.w;
         const float p3p = prim.p3[dim]-pos; //dot(prim.p3,plane)+plane.w;
 
         /* sort to the left side */
         if (p0p <= 0.0f && p3p <= 0.0f)
         {
+	  lgeomBounds.extend(bounds);
+	  lcentBounds.extend(center2(bounds));
+	  lnum++;
+
           if (likely(lblock->insert(prim))) continue; 
           lblock = lprims_o.insert(alloc->malloc(threadIndex));
           lblock->insert(prim);
@@ -327,6 +368,10 @@ namespace embree
         /* sort to the right side */
         if (p0p >= 0.0f && p3p >= 0.0f)
         {
+	  rgeomBounds.extend(bounds);
+	  rcentBounds.extend(center2(bounds));
+	  rnum++;
+
           if (likely(rblock->insert(prim))) continue;
           rblock = rprims_o.insert(alloc->malloc(threadIndex));
           rblock->insert(prim);
@@ -337,10 +382,19 @@ namespace embree
         Bezier1 left,right;
         if (prim.split(plane,left,right)) 
         {
+	  lgeomBounds.extend(bounds);
+	  lcentBounds.extend(center2(bounds));
+	  lnum++;
+
           if (!lblock->insert(left)) {
             lblock = lprims_o.insert(alloc->malloc(threadIndex));
             lblock->insert(left);
           }
+
+	  rgeomBounds.extend(bounds);
+	  rcentBounds.extend(center2(bounds));
+	  rnum++;
+
           if (!rblock->insert(right)) {
             rblock = rprims_o.insert(alloc->malloc(threadIndex));
             rblock->insert(right);
@@ -349,6 +403,10 @@ namespace embree
         }
 
         /* insert to left side as fallback */
+	lgeomBounds.extend(bounds);
+	lcentBounds.extend(center2(bounds));
+	lnum++;
+
         if (!lblock->insert(prim)) {
           lblock = lprims_o.insert(alloc->malloc(threadIndex));
           lblock->insert(prim);
@@ -356,5 +414,15 @@ namespace embree
       }
       alloc->free(threadIndex,block);
     }
+
+    linfo.geomBounds.extend(lgeomBounds);
+    linfo.centBounds.extend(lcentBounds);
+    linfo.numBeziers += lnum;
+    linfo.num += lnum;
+
+    rinfo.geomBounds.extend(rgeomBounds);
+    rinfo.centBounds.extend(rcentBounds);
+    rinfo.numBeziers += rnum;
+    rinfo.num += rnum;
   }
 }

@@ -95,11 +95,12 @@ namespace embree
 
       __forceinline void split(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims, TriRefList& rprims) 
       {
+	PrimInfo linfo,rinfo;
         switch (type) {
         case STRAND_SPLIT   :  break;  // FIXME: should clear prims array?       
-        case OBJECT_SPLIT : ((ObjectSplitBinner::Split* )data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
-        case OBJECT_SPLIT_UNALIGNED : ((ObjectSplitBinnerUnaligned::Split* )data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
-        case SPATIAL_SPLIT: ((SpatialSplit::Split*)data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
+        case OBJECT_SPLIT : ((ObjectSplitBinner::Split* )data)->split(threadIndex,alloc,prims,lprims,linfo,rprims,rinfo); break;          
+        case OBJECT_SPLIT_UNALIGNED : ((ObjectSplitBinnerUnaligned::Split* )data)->split(threadIndex,alloc,prims,lprims,linfo,rprims,rinfo); break;          
+        case SPATIAL_SPLIT: ((SpatialSplit::Split*)data)->split(threadIndex,alloc,prims,lprims,linfo,rprims,rinfo); break;          
         case SPATIAL_CENTER_SPLIT: ((SpatialCenterSplit::Split*)data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
         case TYPE_SPLIT   : ((ObjectTypePartitioning::Split*   )data)->split(threadIndex,alloc,prims,lprims,rprims); break;         
         default           : split_fallback(threadIndex,alloc,prims,lprims,rprims); break;
@@ -108,11 +109,12 @@ namespace embree
 
       void split(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims, BezierRefList& rprims)
       {
+	PrimInfo linfo,rinfo;
         switch (type) {
         case STRAND_SPLIT   : ((StrandSplit::Split*   )data)->split(threadIndex,alloc,prims,lprims,rprims); break;         
-        case OBJECT_SPLIT : ((ObjectSplitBinner::Split* )data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
-        case OBJECT_SPLIT_UNALIGNED : ((ObjectSplitBinnerUnaligned::Split* )data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
-        case SPATIAL_SPLIT: ((SpatialSplit::Split*)data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
+        case OBJECT_SPLIT : ((ObjectSplitBinner::Split* )data)->split(threadIndex,alloc,prims,lprims,linfo,rprims,rinfo); break;          
+        case OBJECT_SPLIT_UNALIGNED : ((ObjectSplitBinnerUnaligned::Split* )data)->split(threadIndex,alloc,prims,lprims,linfo,rprims,rinfo); break;          
+        case SPATIAL_SPLIT: ((SpatialSplit::Split*)data)->split(threadIndex,alloc,prims,lprims,linfo,rprims,rinfo); break;          
         case SPATIAL_CENTER_SPLIT: PING; throw std::runtime_error("implement me"); break; // FIXME: //((SpatialCenterSplit::Split*)data)->split(threadIndex,alloc,prims,lprims,rprims); break;          
         case TYPE_SPLIT   : ((ObjectTypePartitioning::Split*   )data)->split(threadIndex,alloc,prims,lprims,rprims); break;         
         default           : split_fallback(threadIndex,alloc,prims,lprims,rprims); break;

@@ -61,7 +61,7 @@ namespace embree
     BBox3fa geomBounds;   //!< geometry bounds of primitives
     BBox3fa centBounds;   //!< centroid bounds of primitives
   };
-  
+
   class ObjectSplitBinner
   {
     /*! Maximal number of bins. */
@@ -75,7 +75,10 @@ namespace embree
     typedef atomic_set<BezierRefBlock> BezierRefList;
 
   public:
-    
+
+    static void split_fallback(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims, PrimInfo& linfo, TriRefList& rprims, PrimInfo& rinfo);
+    static void split_fallback(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims, PrimInfo& linfo, BezierRefList& rprims, PrimInfo& rinfo);
+  
     /*! Compute the number of blocks occupied for each dimension. */
     __forceinline static Vec3ia blocks(const Vec3ia& a) { return (a+Vec3ia((1 << logBlockSize)-1)) >> logBlockSize; }
     
@@ -128,9 +131,9 @@ namespace embree
       /*! return SAH cost of performing the split */
       __forceinline float splitSAH() const { return cost; } 
 
-      void split(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims, TriRefList& rprims);
+      void split(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims, PrimInfo& linfo, TriRefList& rprims, PrimInfo& rinfo);
 
-      void split(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims, BezierRefList& rprims);
+      void split(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims, PrimInfo& linfo, BezierRefList& rprims, PrimInfo& rinfo);
 
     public:
       Mapping mapping;    //!< Mapping to bins
