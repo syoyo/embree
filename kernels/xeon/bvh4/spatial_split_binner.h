@@ -41,6 +41,7 @@ namespace embree
     __forceinline static int  blocks(size_t a) { return (int)((a+((1LL << logBlockSize)-1)) >> logBlockSize); }
 
     SpatialSplit (TriRefList& tris, float triCost);
+    SpatialSplit (BezierRefList& beziers, float bezierCost);
     SpatialSplit (TriRefList& tris, float triCost, BezierRefList& beziers, float bezierCost);
     
     class Split

@@ -132,15 +132,15 @@ namespace embree
       depth = 0;
       size_t cdepth = 0;
       BVH4::UANode* n = node.getUANode();
-      bvhSAH += A*BVH4::travCost;
-      //bvhSAH += A*BVH4::travCostAligned;
+      //bvhSAH += A*BVH4::travCost;
+      bvhSAH += A*BVH4::travCostAligned;
       for (size_t i=0; i<BVH4::N; i++) {
         statistics(n->child(i),safeArea(n->bounds(i)),cdepth); 
         depth=max(depth,cdepth);
       }
       depth++;
     }
-#if OLD_ENCODING == 0
+    //#if OLD_ENCODING == 0
     else if (node.isUUNode())
     {
       numUUNodes++;
@@ -154,7 +154,7 @@ namespace embree
       }
       depth++;
     }
-#endif
+    //#endif
     else if (node.isLeaf())
     {
       depth = 0;
@@ -167,8 +167,8 @@ namespace embree
       for (size_t i=0; i<num; i++) {
         numPrims[ty] += bvh->primTys[ty]->size(tri+i*bvh->primTys[ty]->bytes);
       }
-      float sah = A * bvh->primTys[ty]->intCost * num;
-      //float sah = A * BVH4::intCost * num;
+      //float sah = A * bvh->primTys[ty]->intCost * num;
+      float sah = A * BVH4::intCost * num;
       bvhSAH += sah;
       leafSAH += sah;
     }

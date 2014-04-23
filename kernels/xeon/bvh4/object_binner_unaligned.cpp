@@ -44,7 +44,17 @@ namespace embree
   }
 
   ObjectSplitBinnerUnaligned::ObjectSplitBinnerUnaligned(const LinearSpace3fa& space, 
-                                                                       TriRefList& triangles, float triCost, BezierRefList& beziers, float bezierCost) 
+							 BezierRefList& beziers, float bezierCost) 
+    : space(space), triCost(0.0f), bezierCost(bezierCost)
+  {
+    add(beziers);
+    setup_binning();
+    bin(beziers);
+    best();
+  }
+
+  ObjectSplitBinnerUnaligned::ObjectSplitBinnerUnaligned(const LinearSpace3fa& space, 
+							 TriRefList& triangles, float triCost, BezierRefList& beziers, float bezierCost) 
     : space(space), triCost(triCost), bezierCost(bezierCost)
   {
     add(triangles);

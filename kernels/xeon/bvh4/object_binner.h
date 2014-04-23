@@ -142,6 +142,7 @@ namespace embree
     
     /*! default constructor */
     ObjectSplitBinner (TriRefList& prims, float triCost);
+    ObjectSplitBinner (BezierRefList& beziers, float bezierCost);
     ObjectSplitBinner (TriRefList& prims, float triCost, BezierRefList& beziers, float bezierCost);
   
   private:

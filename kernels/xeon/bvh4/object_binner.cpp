@@ -29,6 +29,15 @@ namespace embree
     best();
   }
 
+  ObjectSplitBinner::ObjectSplitBinner(BezierRefList& beziers, float bezierCost) 
+    : triCost(0.0f), bezierCost(bezierCost)
+  {
+    add(beziers);
+    setup_binning();
+    bin(beziers);
+    best();
+  }
+
   ObjectSplitBinner::ObjectSplitBinner(TriRefList& triangles, float triCost, BezierRefList& beziers, float bezierCost) 
     : triCost(triCost), bezierCost(bezierCost)
   {

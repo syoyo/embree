@@ -420,11 +420,11 @@ namespace embree
 
     StrandSplit strand_split;
     float strand_split_sah = inf;
-    if (pinfo.numTriangles == 0 && pinfo.numBeziers > 0) {
+    /*if (pinfo.numTriangles == 0 && pinfo.numBeziers > 0) {
       strand_split.find(beziers,bezierCost);
       strand_split_sah = strand_split.split.splitSAH() + BVH4::travCostUnaligned*halfArea(nodeBounds.bounds);
       bestSAH = min(bestSAH,strand_split_sah);
-    }
+      }*/
     
     ObjectSplitBinner object_binning_aligned(tris,triCost,beziers,bezierCost);
     float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + BVH4::travCostAligned*halfArea(nodeBounds.bounds);;
@@ -471,8 +471,8 @@ namespace embree
     float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + BVH4::travCostAligned*halfArea(pinfo.geomBounds);;
     bestSAH = min(bestSAH,object_binning_aligned_sah);
 
-    //bool enableSpatialSplits = false;
-    bool enableSpatialSplits = remainingSpatialSplits > 0;
+    bool enableSpatialSplits = false;
+    //bool enableSpatialSplits = remainingSpatialSplits > 0;
     //SpatialSplit spatial_binning_aligned(tris,triCost);
     SpatialCenterSplit spatial_binning_aligned(tris,triCost);
     float spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + BVH4::travCostAligned*halfArea(pinfo.geomBounds);
@@ -737,8 +737,8 @@ namespace embree
   {
     size_t numChildren;
     BuildTask tasks[BVH4::N];
-    processTriangles(threadIndex,task,tasks,numChildren);
-    //processTrianglesAndBeziers(threadIndex,task,tasks,numChildren);
+    //processTriangles(threadIndex,task,tasks,numChildren);
+    processTrianglesAndBeziers(threadIndex,task,tasks,numChildren);
     for (size_t i=0; i<numChildren; i++) 
       recurseTask(threadIndex,tasks[i]);
   }

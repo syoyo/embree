@@ -22,7 +22,7 @@
 #include "common/scene.h"
 #include "geometry/primitive.h"
 
-#define OLD_ENCODING 0
+#define OLD_ENCODING 1
 
 namespace embree
 {
@@ -59,12 +59,12 @@ namespace embree
     static const size_t barrier_mask = 0x0000000000000008LL;  //!< barrier bit to mark nodes during build
     static const size_t type_mask    = 0x0000000000000007LL;  //!< node and leaf type bits
     static const size_t alignment    = 0x0000000000000080LL;  //!< required pointer alignment
-    static const size_t emptyNode = 0x0000000000000001LL;
-    //static const size_t emptyNode = 0x0000000000000002LL;
-    static const size_t invalidNode = 0xFFFFFFFFFFFFFFF1LL;
-    //static const size_t invalidNode = 0xFFFFFFFFFFFFFFF2LL;
-    static const size_t maxLeafBlocks = 6;
-    //static const size_t maxLeafBlocks = 5;
+    //static const size_t emptyNode = 0x0000000000000001LL;
+    static const size_t emptyNode = 0x0000000000000002LL;
+    //static const size_t invalidNode = 0xFFFFFFFFFFFFFFF1LL;
+    static const size_t invalidNode = 0xFFFFFFFFFFFFFFF2LL;
+    //static const size_t maxLeafBlocks = 6;
+    static const size_t maxLeafBlocks = 5;
     static const size_t maxLeafTypes = 4;                     //!< maximal number of leaf types
 #endif
 
@@ -103,13 +103,13 @@ namespace embree
 #if OLD_ENCODING == 0
 	prefetchL1(((char*)(ptr & ~deco_mask))+0*64);
 	prefetchL1(((char*)(ptr & ~deco_mask))+1*64);
-	//prefetchL1(((char*)(ptr & ~deco_mask))+2*64);
-	//prefetchL1(((char*)(ptr & ~deco_mask))+3*64);
+	prefetchL1(((char*)(ptr & ~deco_mask))+2*64);
+	prefetchL1(((char*)(ptr & ~deco_mask))+3*64);
 #else
 	prefetchL1(((char*)(ptr))+0*64);
 	prefetchL1(((char*)(ptr))+1*64);
-	//prefetchL1(((char*)(ptr))+2*64);
-	//prefetchL1(((char*)(ptr))+3*64);
+	prefetchL1(((char*)(ptr))+2*64);
+	prefetchL1(((char*)(ptr))+3*64);
 #endif
       }
 
@@ -126,16 +126,16 @@ namespace embree
 #if OLD_ENCODING == 0
       __forceinline bool isLeaf() const { return (ptr & type_mask) >= tyL0; }
 #else
-      __forceinline bool isLeaf() const { return (ptr & type_mask) != 0; }
-      //__forceinline bool isLeaf() const { return (ptr & type_mask) > tyUU; }
+      //__forceinline bool isLeaf() const { return (ptr & type_mask) != 0; }
+      __forceinline bool isLeaf() const { return (ptr & type_mask) > tyUU; }
 #endif
 
       /*! checks if this is a node */
 #if OLD_ENCODING == 0
       __forceinline bool isNode() const { return (ptr & type_mask) < tyL0; }
 #else
-      __forceinline bool isNode() const { return (ptr & type_mask) == 0; }
-      //__forceinline bool isNode() const { return (ptr & type_mask) <= tyUU; }
+      //__forceinline bool isNode() const { return (ptr & type_mask) == 0; }
+      __forceinline bool isNode() const { return (ptr & type_mask) <= tyUU; }
 #endif
       
       /*! checks for different node types */
@@ -177,10 +177,10 @@ namespace embree
         return (char*)(ptr & ~deco_mask);
         //return (char*)(((ptr >> 4) << 8) >> 4); //~deco_mask);
 #else
-        num = (ptr & type_mask)-1;
-        //num = (ptr & type_mask)-2;
-        type = 0;
-        //type = 1;
+        //num = (ptr & type_mask)-1;
+        num = (ptr & type_mask)-2;
+        //type = 0;
+        type = 1;
         return (char*)(ptr & ~type_mask);
 #endif
       }
@@ -712,8 +712,8 @@ namespace embree
       assert(type < maxLeafTypes);
       return NodeRef((size_t)tri | (tyL0 + type) | (min(num,maxLeafBlocks) << 60));
 #else
-      return NodeRef((size_t)tri | (1+min(num,maxLeafBlocks)));
-      //return NodeRef((size_t)tri | (2+min(num,maxLeafBlocks)));
+      //return NodeRef((size_t)tri | (1+min(num,maxLeafBlocks)));
+      return NodeRef((size_t)tri | (2+min(num,maxLeafBlocks)));
 #endif
     }
 
