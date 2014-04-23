@@ -85,7 +85,7 @@ namespace embree
     /*! creates a leaf node */
     NodeRef leaf   (size_t threadIndex, size_t depth, BezierRefList& prims, const PrimInfo& pinfo);
 
-    void computeSplit(PrimInfo& pinfo, BezierRefList& beziers, GeneralSplit& split, const NAABBox3fa& nodeBounds);
+    void computeSplit(PrimInfo& pinfo, BezierRefList& beziers, GeneralSplit& split);
     
     TASK_RUN_FUNCTION(BVH4BuilderHair2,task_build_parallel);
     

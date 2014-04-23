@@ -180,7 +180,7 @@ namespace embree
       }
     }
     PrimInfo pinfo = computePrimInfo(beziers);
-    GeneralSplit split; computeSplit(pinfo,beziers,split,pinfo.geomBounds);
+    GeneralSplit split; computeSplit(pinfo,beziers,split);
 
     /* perform binning */
     bvh->numPrimitives = numPrimitives;
@@ -262,28 +262,28 @@ namespace embree
       throw std::runtime_error("unknown primitive type");
   }
 
-  void BVH4BuilderHair2::computeSplit(PrimInfo& pinfo, BezierRefList& beziers, GeneralSplit& split, const NAABBox3fa& nodeBounds) //,  bool isAligned)
+  void BVH4BuilderHair2::computeSplit(PrimInfo& pinfo, BezierRefList& beziers, GeneralSplit& split)
   {
     float bestSAH = inf;
     const float bezierCost = BVH4::intCost;
-    //const int travCostAligned = isAligned ? BVH4::travCostAligned : BVH4::travCostUnaligned;
     float travCostAligned = BVH4::travCostAligned;
-
+    const NAABBox3fa hairspace = computeHairSpace(beziers);
+    float A = halfArea(hairspace.bounds)
+    
     ObjectSplitBinner object_binning_aligned(beziers,bezierCost);
-    float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + travCostAligned*halfArea(nodeBounds.bounds);
+    float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + travCostAligned*A;
     bestSAH = min(bestSAH,object_binning_aligned_sah);
 
     /*bool enableSpatialSplits = false;
     //bool enableSpatialSplits = remainingSpatialSplits > 0;
     SpatialSplit spatial_binning_aligned(beziers,bezierCost);
-    float spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + travCostAligned*halfArea(nodeBounds.bounds);
+    float spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + travCostAligned*A;
     if (enableSpatialSplits) 
     bestSAH = min(bestSAH,spatial_binning_aligned_sah );*/
     
-    const NAABBox3fa hairspace = computeHairSpace(beziers);
     
     ObjectSplitBinnerUnaligned object_binning_unaligned(hairspace.space,beziers,bezierCost);
-    float object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*halfArea(nodeBounds.bounds);
+    float object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*A;
     bestSAH = min(bestSAH,object_binning_unaligned_sah);
     
     if (bestSAH == float(inf))
@@ -341,8 +341,8 @@ namespace embree
       aligned &= csplit[bestChild].aligned;
       PrimInfo linfo,rinfo;
       BezierRefList lbeziers,rbeziers; csplit[bestChild].split(threadIndex,&allocBezierRefs,cbeziers[bestChild],lbeziers,linfo,rbeziers,rinfo);
-      GeneralSplit lsplit; computeSplit(linfo,lbeziers,lsplit,linfo.geomBounds); // FIXME: ,linfo.geomBounds not correct
-      GeneralSplit rsplit; computeSplit(rinfo,rbeziers,rsplit,rinfo.geomBounds);
+      GeneralSplit lsplit; computeSplit(linfo,lbeziers,lsplit);
+      GeneralSplit rsplit; computeSplit(rinfo,rbeziers,rsplit);
       cbeziers[bestChild  ] = lbeziers; cpinfo[bestChild] = linfo; csplit[bestChild  ] = lsplit;
       cbeziers[numChildren] = rbeziers; cpinfo[numChildren] = rinfo; csplit[numChildren] = rsplit;
       numChildren++;
