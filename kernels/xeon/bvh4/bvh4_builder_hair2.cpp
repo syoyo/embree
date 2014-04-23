@@ -268,7 +268,7 @@ namespace embree
     const float bezierCost = BVH4::intCost;
     float travCostAligned = BVH4::travCostAligned;
     const NAABBox3fa hairspace = computeHairSpace(beziers);
-    float A = halfArea(hairspace.bounds)
+    float A = halfArea(hairspace.bounds);
     
     ObjectSplitBinner object_binning_aligned(beziers,bezierCost);
     float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + travCostAligned*A;
@@ -341,7 +341,7 @@ namespace embree
       aligned &= csplit[bestChild].aligned;
       PrimInfo linfo,rinfo;
       BezierRefList lbeziers,rbeziers; csplit[bestChild].split(threadIndex,&allocBezierRefs,cbeziers[bestChild],lbeziers,linfo,rbeziers,rinfo);
-      GeneralSplit lsplit; computeSplit(linfo,lbeziers,lsplit);
+      GeneralSplit lsplit; computeSplit(linfo,lbeziers,lsplit); // FIXME: ,linfo.geomBounds not correct
       GeneralSplit rsplit; computeSplit(rinfo,rbeziers,rsplit);
       cbeziers[bestChild  ] = lbeziers; cpinfo[bestChild] = linfo; csplit[bestChild  ] = lsplit;
       cbeziers[numChildren] = rbeziers; cpinfo[numChildren] = rinfo; csplit[numChildren] = rsplit;
