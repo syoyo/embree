@@ -140,6 +140,7 @@ namespace embree
       }
       depth++;
     }
+#if OLD_ENCODING == 0
     else if (node.isUUNode())
     {
       numUUNodes++;
@@ -153,6 +154,7 @@ namespace embree
       }
       depth++;
     }
+#endif
     else if (node.isLeaf())
     {
       depth = 0;
