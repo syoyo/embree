@@ -103,13 +103,6 @@ namespace embree
       }
     }
     //assert(bestArea != (float)inf); // FIXME: can get raised if all selected curves are points
-/*#ifdef DEBUG
-    if (bestArea == (float)inf)
-      {
-        std::cout << "WARNING: bestArea == (float)inf" << std::endl; 
-      }
-      #endif*/
-
     return NAABBox3fa(bestSpace,bestBounds);
   }
 
@@ -196,12 +189,12 @@ namespace embree
     //else                     bvh->numVertices = 0;
 
 
-#if 1
+#if 0
     BuildTask task(&bvh->root,1,beziers,pinfo,split,geomBounds);
     recurseTask(threadIndex,task);
     //for (int i=0; i<5; i++) BVH4Rotate::rotate(bvh,*task.dst); 
 #else
-    BuildTask task(&bvh->root,1,tris,beziers,pinfo,split,geomBounds);
+    BuildTask task(&bvh->root,1,beziers,pinfo,split,geomBounds);
     numActiveTasks = 1;
     tasks.push_back(task);
     push_heap(tasks.begin(),tasks.end());
@@ -280,12 +273,12 @@ namespace embree
     float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + travCostAligned*halfArea(nodeBounds.bounds);
     bestSAH = min(bestSAH,object_binning_aligned_sah);
 
-    bool enableSpatialSplits = false;
+    /*bool enableSpatialSplits = false;
     //bool enableSpatialSplits = remainingSpatialSplits > 0;
     SpatialSplit spatial_binning_aligned(beziers,bezierCost);
     float spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + travCostAligned*halfArea(nodeBounds.bounds);
     if (enableSpatialSplits) 
-      bestSAH = min(bestSAH,spatial_binning_aligned_sah );
+    bestSAH = min(bestSAH,spatial_binning_aligned_sah );*/
     
     const NAABBox3fa hairspace = computeHairSpace(beziers);
     
@@ -299,10 +292,10 @@ namespace embree
     else if (bestSAH == object_binning_aligned_sah)
       new (&split) GeneralSplit(object_binning_aligned.split,true);
 
-    else if (enableSpatialSplits && bestSAH == spatial_binning_aligned_sah) {
+    /*else if (enableSpatialSplits && bestSAH == spatial_binning_aligned_sah) {
       new (&split) GeneralSplit(spatial_binning_aligned.split,true);
       atomic_add(&remainingSpatialSplits,-spatial_binning_aligned.split.numSpatialSplits);
-    }
+      }*/
     else if (bestSAH == object_binning_unaligned_sah)
       new (&split) GeneralSplit(object_binning_unaligned.split);
 
