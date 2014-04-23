@@ -633,7 +633,10 @@ namespace embree
     }
 
     /*! BVH4 instantiations */
-    static Accel* BVH4Bezier1i(Scene* scene);
+    static Accel* BVH4Triangle4Bezier1(Scene* scene);
+
+    static Accel* BVH4Bezier1   (Scene* scene);
+    static Accel* BVH4Bezier1i  (Scene* scene);
     static Accel* BVH4Triangle1(Scene* scene);
     static Accel* BVH4Triangle4(Scene* scene);
     static Accel* BVH4Triangle8(Scene* scene);
@@ -688,9 +691,9 @@ namespace embree
       CUNode* node = (CUNode*) alloc->malloc(thread,sizeof(CUNode),alignment); node->clear(); return node;
     }
 
-    /*__forceinline char* allocPrimitiveBlocks(size_t thread, size_t ty, size_t num) {
+    __forceinline char* allocPrimitiveBlocks(size_t thread, size_t ty, size_t num) {
       return (char*) alloc->malloc(thread,num*primTys[ty]->bytes,alignment);
-      }*/
+    }
 
     __forceinline char* allocPrimitiveBlocks(size_t thread, size_t num) {
       return (char*) alloc->malloc(thread,num*primTy.bytes,alignment);

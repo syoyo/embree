@@ -72,6 +72,7 @@ ADD_ISPC_LIBRARY(embree SHARED
   bvh4/bvh4_builder_binner.cpp
   bvh4/bvh4_builder_toplevel.cpp
   bvh4/bvh4_intersector1.cpp   
+  bvh4/bvh4_intersector1_full.cpp
   bvh4/bvh4_intersector4_chunk.cpp
   bvh4/bvh4_intersector4_hybrid.cpp
   bvh4/bvh4_statistics.cpp
@@ -98,6 +99,7 @@ IF (TARGET_SSE41)
     bvh4/bvh4_builder_binner.cpp
     bvh4/bvh4_builder_toplevel.cpp
     bvh4/bvh4_intersector1.cpp   
+    bvh4/bvh4_intersector1_full.cpp
     bvh4/bvh4_intersector4_chunk.cpp
     bvh4/bvh4_intersector4_hybrid.cpp
     bvh4/bvh4_builder_morton.cpp
@@ -114,6 +116,15 @@ IF (TARGET_AVX)
   bvh4hair/bvh4hair_builder2.cpp       # FIXME: should be in SSE2 section
   bvh4hair/bvh4hair_statistics.cpp    # FIXME: should be in SSE2 section
 
+  bvh4/bvh4_builder2.cpp             # FIXME: should be in SSE2 section
+  bvh4/bvh4_builder_hair.cpp       # FIXME: should be in SSE2 section
+  bvh4/object_binner.cpp
+  bvh4/object_binner_unaligned.cpp
+  bvh4/spatial_split_binner.cpp
+  bvh4/spatial_center_split.cpp
+  bvh4/object_type_partition.cpp
+  bvh4/strand_split.cpp
+
    geometry/triangle8.cpp
    geometry/ispc_wrapper_avx.cpp
 
@@ -122,6 +133,7 @@ IF (TARGET_AVX)
    geometry/instance_intersector8.cpp
 
    bvh4/bvh4_intersector1.cpp   
+   bvh4/bvh4_intersector1_full.cpp
    bvh4/bvh4_intersector4_chunk.cpp
    bvh4/bvh4_intersector4_hybrid.cpp
    bvh4/bvh4_intersector8_chunk.cpp
@@ -165,6 +177,7 @@ IF (TARGET_AVX2)
     geometry/ispc_wrapper_avx.cpp
 		
     bvh4/bvh4_intersector1.cpp
+    bvh4/bvh4_intersector1_full.cpp
     bvh4/bvh4_intersector4_chunk.cpp
     bvh4/bvh4_intersector4_hybrid.cpp
     bvh4/bvh4_intersector8_chunk.cpp
