@@ -640,19 +640,19 @@ namespace embree
 
 
     __forceinline UANode* allocUANode(size_t thread) {
-      UANode* node = (UANode*) alloc->malloc(thread,sizeof(UANode),1 << 7); node->clear(); return node;
+      UANode* node = (UANode*) alloc->malloc(thread,sizeof(UANode),alignment); node->clear(); return node;
     }
 
     __forceinline CANode* allocCANode(size_t thread) {
-      CANode* node = (CANode*) alloc->malloc(thread,sizeof(CANode),1 << 7); node->clear(); return node;
+      CANode* node = (CANode*) alloc->malloc(thread,sizeof(CANode),alignment); node->clear(); return node;
     }
 
     __forceinline UUNode* allocUUNode(size_t thread) {
-      UUNode* node = (UUNode*) alloc->malloc(thread,sizeof(UUNode),1 << 7); node->clear(); return node;
+      UUNode* node = (UUNode*) alloc->malloc(thread,sizeof(UUNode),alignment); node->clear(); return node;
     }
 
     __forceinline CUNode* allocCUNode(size_t thread) {
-      CUNode* node = (CUNode*) alloc->malloc(thread,sizeof(CUNode),1 << 7); node->clear(); return node;
+      CUNode* node = (CUNode*) alloc->malloc(thread,sizeof(CUNode),alignment); node->clear(); return node;
     }
 
     /*__forceinline char* allocPrimitiveBlocks(size_t thread, size_t ty, size_t num) {
@@ -660,7 +660,7 @@ namespace embree
       }*/
 
     __forceinline char* allocPrimitiveBlocks(size_t thread, size_t num) {
-      return (char*) alloc->malloc(thread,num*primTy.bytes,1 << 6);
+      return (char*) alloc->malloc(thread,num*primTy.bytes,alignment);
     }
 
     /*! Encodes a node */
