@@ -30,86 +30,6 @@ namespace embree
     if (maxLeafBeziers < this->maxLeafSize) this->maxLeafSize = maxLeafBeziers; // FIXME: keep separate for tris and beziers
   }
 
-  const PrimInfo BVH4BuilderHair2::computePrimInfo(BezierRefList& beziers)
-  {
-    PrimInfo pinfo;
-    BBox3fa geomBounds = empty;
-    BBox3fa centBounds = empty;
-    BezierRefList::iterator b=beziers;
-    while (BezierRefBlock* block = b.next()) 
-    {
-      pinfo.num += block->size();
-      pinfo.numBeziers += block->size();
-      for (size_t i=0; i<block->size(); i++)
-      {
-        const BBox3fa bounds = block->at(i).bounds(); 
-        geomBounds.extend(bounds);
-        centBounds.extend(center2(bounds));
-      }
-    }
-    pinfo.geomBounds = geomBounds;
-    pinfo.centBounds = centBounds;
-    return pinfo;
-  }
-
-  const BBox3fa BVH4BuilderHair2::computeAlignedBounds(BezierRefList& beziers)
-  {
-    BBox3fa bounds = empty;
-    for (BezierRefList::block_iterator_unsafe i=beziers; i; i++)
-      bounds.extend(i->bounds());
-    return bounds;
-  }
-
-  const NAABBox3fa BVH4BuilderHair2::computeAlignedBounds(BezierRefList& beziers, const LinearSpace3fa& space)
-  {
-    BBox3fa bounds = empty;
-    for (BezierRefList::block_iterator_unsafe i=beziers; i; i++)
-      bounds.extend(i->bounds(space));
-    return NAABBox3fa(space,bounds);
-  }
-
-  const NAABBox3fa BVH4BuilderHair2::computeHairSpace(BezierRefList& prims)
-  {
-    size_t N = BezierRefList::block_iterator_unsafe(prims).size();
-    if (N == 0)
-      return empty; // FIXME: can cause problems with compression
-
-    float bestArea = inf;
-    LinearSpace3fa bestSpace = one;
-    BBox3fa bestBounds = empty;
-
-    size_t k=0;
-    for (BezierRefList::block_iterator_unsafe i = prims; i; i++)
-    {
-      //if (k++ != 0) break;
-      //if ((k++) % ((N+7)/8)) continue;
-      //if ((k++) % ((N+3)/4)) continue;
-      //if ((k++) % ((N+1)/2)) continue;
-      if ((k++) != N/2) continue;
-      //size_t k = begin + rand() % (end-begin);
-      const Vec3fa axis = normalize(i->p3 - i->p0);
-      if (length(i->p3 - i->p0) < 1E-9) continue;
-      const LinearSpace3fa space0 = frame(axis).transposed();
-      //const LinearSpace3fa space0 = LinearSpace3fa::rotate(Vec3fa(0,0,1),2.0f*float(pi)*drand48())*frame(axis).transposed();
-      const LinearSpace3fa space = clamp(space0);
-      BBox3fa bounds = empty;
-      float area = 0.0f;
-      for (BezierRefList::block_iterator_unsafe j = prims; j; j++) {
-        const BBox3fa cbounds = j->bounds(space);
-        area += halfArea(cbounds);
-        bounds.extend(cbounds);
-      }
-
-      if (area <= bestArea) {
-        bestBounds = bounds;
-        bestSpace = space;
-        bestArea = area;
-      }
-    }
-    //assert(bestArea != (float)inf); // FIXME: can get raised if all selected curves are points
-    return NAABBox3fa(bestSpace,bestBounds);
-  }
-
   void BVH4BuilderHair2::build(size_t threadIndex, size_t threadCount) 
   {
     size_t numBeziers = 0;
@@ -123,14 +43,8 @@ namespace embree
         BezierCurves* set = (BezierCurves*) geom;
         numBeziers  += set->numCurves;
       }
-
-      if (geom->type == TRIANGLE_MESH) {
-        TriangleMesh* set = (TriangleMesh*) geom;
-        if (set->numTimeSteps != 1) continue;
-        numTriangles += set->numTriangles;
-      }
     }
-    size_t numPrimitives = numBeziers + numTriangles;
+    size_t numPrimitives = numBeziers;
 
     remainingSpatialSplits = 4.0f*numPrimitives; // FIXME: hardcoded constant
     bvh->init(numPrimitives+remainingSpatialSplits);
@@ -144,13 +58,8 @@ namespace embree
       t0 = getSeconds();
     
     /* first generate primrefs */
-    //size_t numTriangles = 0;
     size_t numVertices = 0;
-    TriRefList tris;
     BezierRefList beziers;
-
-    //size_t numTris = 0;
-    //size_t numBeziers = 0;
     BBox3fa geomBounds = empty;
     BBox3fa centBounds = empty;
 
@@ -183,7 +92,7 @@ namespace embree
         }
       }
     }
-    PrimInfo pinfo = computePrimInfo(beziers);
+    PrimInfo pinfo = ObjectSplitBinner::computePrimInfo(beziers);
     GeneralSplit split; computeSplit(pinfo,beziers,split);
 
     /* perform binning */
@@ -264,36 +173,78 @@ namespace embree
       throw std::runtime_error("unknown primitive type");
   }
 
+  const NAABBox3fa BVH4BuilderHair2::computeHairSpace(BezierRefList& prims)
+  {
+    size_t N = BezierRefList::block_iterator_unsafe(prims).size();
+    if (N == 0)
+      return empty; // FIXME: can cause problems with compression
+
+    float bestArea = inf;
+    LinearSpace3fa bestSpace = one;
+    BBox3fa bestBounds = empty;
+
+    size_t k=0;
+    for (BezierRefList::block_iterator_unsafe i = prims; i; i++)
+    {
+      //if (k++ != 0) break;
+      //if ((k++) % ((N+7)/8)) continue;
+      //if ((k++) % ((N+3)/4)) continue;
+      //if ((k++) % ((N+1)/2)) continue;
+      if ((k++) != N/2) continue;
+      //size_t k = begin + rand() % (end-begin);
+      const Vec3fa axis = normalize(i->p3 - i->p0);
+      if (length(i->p3 - i->p0) < 1E-9) continue;
+      const LinearSpace3fa space0 = frame(axis).transposed();
+      //const LinearSpace3fa space0 = LinearSpace3fa::rotate(Vec3fa(0,0,1),2.0f*float(pi)*drand48())*frame(axis).transposed();
+      const LinearSpace3fa space = clamp(space0);
+      BBox3fa bounds = empty;
+      float area = 0.0f;
+      for (BezierRefList::block_iterator_unsafe j = prims; j; j++) {
+        const BBox3fa cbounds = j->bounds(space);
+        area += halfArea(cbounds);
+        bounds.extend(cbounds);
+      }
+
+      if (area <= bestArea) {
+        bestBounds = bounds;
+        bestSpace = space;
+        bestArea = area;
+      }
+    }
+    //assert(bestArea != (float)inf); // FIXME: can get raised if all selected curves are points
+    return NAABBox3fa(bestSpace,bestBounds);
+  }
+
   void BVH4BuilderHair2::computeSplit(PrimInfo& pinfo, BezierRefList& beziers, GeneralSplit& split)
   {
     float bestSAH = inf;
     const float bezierCost = BVH4::intCost;
-    float travCostAligned = BVH4::travCostAligned;
-    
-    //float A = halfArea(hairspace.bounds);
-    float A = halfArea(pinfo.geomBounds);
+    const float travCostAligned = BVH4::travCostAligned;
+    const float A = halfArea(pinfo.geomBounds);
     
     ObjectSplitBinner object_binning_aligned(beziers,bezierCost);
     float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + travCostAligned*A;
     bestSAH = min(bestSAH,object_binning_aligned_sah);
 
-    /*bool enableSpatialSplits = false;
-    //bool enableSpatialSplits = remainingSpatialSplits > 0;
-    SpatialSplit spatial_binning_aligned(beziers,bezierCost);
-    float spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + travCostAligned*A;
-    if (enableSpatialSplits) 
-    bestSAH = min(bestSAH,spatial_binning_aligned_sah );*/
-        
     ObjectSplitBinnerUnaligned object_binning_unaligned;
     float object_binning_unaligned_sah = inf;
     //if (pinfo.num < 100) {
     //PRINT2(object_binning_aligned.split.splitSAH(),pinfo.bezierSAH(bezierCost));
-    if (1.5f*object_binning_aligned.split.splitSAH() > pinfo.bezierSAH(bezierCost)) {
-    //if (true) {
+    //if (1.5f*bestSAH > pinfo.bezierSAH(bezierCost)) 
+    {
       const NAABBox3fa hairspace = computeHairSpace(beziers);
       object_binning_unaligned.compute(hairspace.space,beziers,bezierCost);
       object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*A;
       bestSAH = min(bestSAH,object_binning_unaligned_sah);
+    }
+
+    SpatialSplit spatial_binning_aligned;
+    float spatial_binning_aligned_sah = inf;
+    //if (1.7f*bestSAH > pinfo.bezierSAH(bezierCost) && remainingSpatialSplits > 0) 
+    {
+      spatial_binning_aligned.compute(beziers,bezierCost);
+      spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + travCostAligned*A;
+      bestSAH = min(bestSAH,spatial_binning_aligned_sah );
     }
     
     if (bestSAH == float(inf))
@@ -302,10 +253,10 @@ namespace embree
     else if (bestSAH == object_binning_aligned_sah)
       new (&split) GeneralSplit(object_binning_aligned.split);
 
-    /*else if (enableSpatialSplits && bestSAH == spatial_binning_aligned_sah) {
+    else if (bestSAH == spatial_binning_aligned_sah) {
       new (&split) GeneralSplit(spatial_binning_aligned.split,true);
       atomic_add(&remainingSpatialSplits,-spatial_binning_aligned.split.numSpatialSplits);
-      }*/
+    }
 
     else if (bestSAH == object_binning_unaligned_sah)
       new (&split) GeneralSplit(object_binning_unaligned.split);

@@ -432,7 +432,8 @@ namespace embree
 
     bool enableSpatialSplits = false;
     //bool enableSpatialSplits = remainingSpatialSplits > 0;
-    SpatialSplit spatial_binning_aligned(tris,triCost,beziers,bezierCost);
+    SpatialSplit spatial_binning_aligned;
+    spatial_binning_aligned.compute(tris,triCost,beziers,bezierCost);
     float spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + BVH4::travCostAligned*halfArea(nodeBounds.bounds);;
     if (enableSpatialSplits) 
       bestSAH = min(bestSAH,spatial_binning_aligned_sah );

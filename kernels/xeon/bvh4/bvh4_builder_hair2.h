@@ -68,12 +68,6 @@ namespace embree
 
     static const PrimInfo computePrimInfo(BezierRefList& beziers);
 
-    /*! calculate bounds for range of primitives */
-    static const BBox3fa computeAlignedBounds(BezierRefList& beziers);
-    
-    /*! calculate bounds for range of primitives */
-    static const NAABBox3fa computeAlignedBounds(BezierRefList& beziers, const LinearSpace3fa& space);
-
     static const NAABBox3fa computeHairSpace(BezierRefList& prims);
 
     /*! builder entry point */

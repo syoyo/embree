@@ -21,9 +21,11 @@ namespace embree
 {
   extern Scene* g_scene; // FIXME: remove me
 
-  SpatialSplit::SpatialSplit(TriRefList& tris, float triCost)
-    : triCost(triCost), bezierCost(0)
+  void SpatialSplit::compute(TriRefList& tris, float triCost)
   {
+    this->triCost = triCost;
+    this->bezierCost = 0.0f;
+
     /* calculate geometry bounds */
     geomBounds = empty;
     for (TriRefList::block_iterator_unsafe i=tris; i; i++)
@@ -45,9 +47,11 @@ namespace embree
     best();
   }
 
-  SpatialSplit::SpatialSplit(BezierRefList& beziers, float bezierCost)
-    : triCost(0.0f), bezierCost(bezierCost)
+  void SpatialSplit::compute(BezierRefList& beziers, float bezierCost)
   {
+    this->triCost = 0.0f;
+    this->bezierCost = bezierCost;
+
     /* calculate geometry bounds */
     geomBounds = empty;
     for (BezierRefList::block_iterator_unsafe i=beziers; i; i++)
@@ -69,9 +73,11 @@ namespace embree
     best();
   }
 
-  SpatialSplit::SpatialSplit(TriRefList& tris, float triCost, BezierRefList& beziers, float bezierCost)
-    : triCost(triCost), bezierCost(bezierCost)
+  void SpatialSplit::compute(TriRefList& tris, float triCost, BezierRefList& beziers, float bezierCost)
   {
+    this->triCost = triCost;
+    this->bezierCost = bezierCost;
+
     /* calculate geometry bounds */
     geomBounds = empty;
     for (TriRefList::block_iterator_unsafe i=tris; i; i++)

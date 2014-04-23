@@ -431,4 +431,26 @@ namespace embree
     rinfo.numBeziers += rnum;
     rinfo.num += rnum;
   }
+
+  const PrimInfo ObjectSplitBinner::computePrimInfo(BezierRefList& beziers)
+  {
+    PrimInfo pinfo;
+    BBox3fa geomBounds = empty;
+    BBox3fa centBounds = empty;
+    BezierRefList::iterator b=beziers;
+    while (BezierRefBlock* block = b.next()) 
+    {
+      pinfo.num += block->size();
+      pinfo.numBeziers += block->size();
+      for (size_t i=0; i<block->size(); i++)
+      {
+        const BBox3fa bounds = block->at(i).bounds(); 
+        geomBounds.extend(bounds);
+        centBounds.extend(center2(bounds));
+      }
+    }
+    pinfo.geomBounds = geomBounds;
+    pinfo.centBounds = centBounds;
+    return pinfo;
+  }
 }

@@ -66,7 +66,7 @@ namespace embree
     };
     
     /*! default constructor */
-    ObjectSplitBinnerUnaligned ();
+    __forceinline ObjectSplitBinnerUnaligned () {};
     void compute(const LinearSpace3fa& space, TriRefList& prims, float triCost);
     void compute(const LinearSpace3fa& space, BezierRefList& beziers, float bezierCost);
     void compute(const LinearSpace3fa& space, TriRefList& prims, float triCost, BezierRefList& beziers, float bezierCost);

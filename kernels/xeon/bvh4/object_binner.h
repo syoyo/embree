@@ -76,6 +76,8 @@ namespace embree
 
   public:
 
+    static const PrimInfo computePrimInfo(BezierRefList& beziers);
+
     static void split_fallback(size_t threadIndex, PrimRefBlockAlloc<PrimRef>* alloc, TriRefList& prims, TriRefList& lprims, PrimInfo& linfo, TriRefList& rprims, PrimInfo& rinfo);
     static void split_fallback(size_t threadIndex, PrimRefBlockAlloc<Bezier1>* alloc, BezierRefList& prims, BezierRefList& lprims, PrimInfo& linfo, BezierRefList& rprims, PrimInfo& rinfo);
   

@@ -34,8 +34,6 @@ namespace embree
     return bounds;
   }
 
-  ObjectSplitBinnerUnaligned::ObjectSplitBinnerUnaligned() {}
-
   void ObjectSplitBinnerUnaligned::compute(const LinearSpace3fa& space, TriRefList& triangles, float triCost) 
   {
     this->space = space;
