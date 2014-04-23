@@ -81,7 +81,11 @@ namespace embree
     size_t k=0;
     for (BezierRefList::block_iterator_unsafe i = prims; i; i++)
     {
-      if ((k++) % ((N+3)/4)) continue;
+      //if (k++ != 0) break;
+      //if ((k++) % ((N+7)/8)) continue;
+      //if ((k++) % ((N+3)/4)) continue;
+      //if ((k++) % ((N+1)/2)) continue;
+      if ((k++) != N/2) continue;
       //size_t k = begin + rand() % (end-begin);
       const Vec3fa axis = normalize(i->p3 - i->p0);
       if (length(i->p3 - i->p0) < 1E-9) continue;
