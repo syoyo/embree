@@ -162,13 +162,13 @@ namespace embree
       __forceinline const NodeRef& child(size_t i) const { assert(i<4); return children[i]; }
 
     public:
+      NodeRef children[4];    //!< Pointer to the 4 children (can be a node or leaf)
       ssef lower_x;           //!< X dimension of lower bounds of all 4 children.
       ssef upper_x;           //!< X dimension of upper bounds of all 4 children.
       ssef lower_y;           //!< Y dimension of lower bounds of all 4 children.
       ssef upper_y;           //!< Y dimension of upper bounds of all 4 children.
       ssef lower_z;           //!< Z dimension of lower bounds of all 4 children.
       ssef upper_z;           //!< Z dimension of upper bounds of all 4 children.
-      NodeRef children[4];    //!< Pointer to the 4 children (can be a node or leaf)
     };
 
     /*! swap the children of two nodes */
