@@ -269,8 +269,9 @@ namespace embree
     float bestSAH = inf;
     const float bezierCost = BVH4::intCost;
     float travCostAligned = BVH4::travCostAligned;
-    const NAABBox3fa hairspace = computeHairSpace(beziers);
-    float A = halfArea(hairspace.bounds);
+    
+    //float A = halfArea(hairspace.bounds);
+    float A = halfArea(pinfo.geomBounds);
     
     ObjectSplitBinner object_binning_aligned(beziers,bezierCost);
     float object_binning_aligned_sah = object_binning_aligned.split.splitSAH() + travCostAligned*A;
@@ -284,9 +285,16 @@ namespace embree
     bestSAH = min(bestSAH,spatial_binning_aligned_sah );*/
         
     ObjectSplitBinnerUnaligned object_binning_unaligned;
-    object_binning_unaligned.compute(hairspace.space,beziers,bezierCost);
-    float object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*A;
-    bestSAH = min(bestSAH,object_binning_unaligned_sah);
+    float object_binning_unaligned_sah = inf;
+    //if (pinfo.num < 100) {
+    //PRINT2(object_binning_aligned.split.splitSAH(),pinfo.bezierSAH(bezierCost));
+    if (1.5f*object_binning_aligned.split.splitSAH() > pinfo.bezierSAH(bezierCost)) {
+    //if (true) {
+      const NAABBox3fa hairspace = computeHairSpace(beziers);
+      object_binning_unaligned.compute(hairspace.space,beziers,bezierCost);
+      object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*A;
+      bestSAH = min(bestSAH,object_binning_unaligned_sah);
+    }
     
     if (bestSAH == float(inf))
       new (&split) GeneralSplit(object_binning_aligned.pinfo.size());
