@@ -48,8 +48,8 @@ namespace embree
         new (data) StrandSplit::Split(split);
 	}*/
 
-      __forceinline GeneralSplit(const ObjectSplitBinner::Split& split, bool aligned_in) {
-        type = OBJECT_SPLIT; aligned = aligned_in;
+      __forceinline GeneralSplit(const ObjectSplitBinner::Split& split) {
+        type = OBJECT_SPLIT; aligned = true;
         split_sah = split.splitSAH();
         new (data) ObjectSplitBinner::Split(split);
       }

@@ -66,9 +66,10 @@ namespace embree
     };
     
     /*! default constructor */
-    ObjectSplitBinnerUnaligned (const LinearSpace3fa& space, TriRefList& prims, float triCost);
-    ObjectSplitBinnerUnaligned (const LinearSpace3fa& space, BezierRefList& beziers, float bezierCost);
-    ObjectSplitBinnerUnaligned (const LinearSpace3fa& space, TriRefList& prims, float triCost, BezierRefList& beziers, float bezierCost);
+    ObjectSplitBinnerUnaligned ();
+    void compute(const LinearSpace3fa& space, TriRefList& prims, float triCost);
+    void compute(const LinearSpace3fa& space, BezierRefList& beziers, float bezierCost);
+    void compute(const LinearSpace3fa& space, TriRefList& prims, float triCost, BezierRefList& beziers, float bezierCost);
   
   private:
 

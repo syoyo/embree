@@ -439,7 +439,8 @@ namespace embree
     
     const LinearSpace3fa hairspace = computeHairSpace(beziers);
     
-    ObjectSplitBinnerUnaligned object_binning_unaligned(hairspace,tris,triCost,beziers,bezierCost);
+    ObjectSplitBinnerUnaligned object_binning_unaligned;
+    object_binning_unaligned.compute(hairspace,tris,triCost,beziers,bezierCost);
     float object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*halfArea(nodeBounds.bounds);;
     bestSAH = min(bestSAH,object_binning_unaligned_sah);
     

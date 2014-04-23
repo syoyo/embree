@@ -34,29 +34,35 @@ namespace embree
     return bounds;
   }
 
-  ObjectSplitBinnerUnaligned::ObjectSplitBinnerUnaligned(const LinearSpace3fa& space, TriRefList& triangles, float triCost) 
-    : space(space), triCost(triCost), bezierCost(0.0f)
+  ObjectSplitBinnerUnaligned::ObjectSplitBinnerUnaligned() {}
+
+  void ObjectSplitBinnerUnaligned::compute(const LinearSpace3fa& space, TriRefList& triangles, float triCost) 
   {
+    this->space = space;
+    this->triCost = triCost;
+    this->bezierCost = 0.0f;
     add(triangles);
     setup_binning();
     bin(triangles);
     best();
   }
 
-  ObjectSplitBinnerUnaligned::ObjectSplitBinnerUnaligned(const LinearSpace3fa& space, 
-							 BezierRefList& beziers, float bezierCost) 
-    : space(space), triCost(0.0f), bezierCost(bezierCost)
+  void ObjectSplitBinnerUnaligned::compute(const LinearSpace3fa& space, BezierRefList& beziers, float bezierCost) 
   {
+    this->space = space;
+    this->triCost = 0.0f;
+    this->bezierCost = bezierCost;
     add(beziers);
     setup_binning();
     bin(beziers);
     best();
   }
 
-  ObjectSplitBinnerUnaligned::ObjectSplitBinnerUnaligned(const LinearSpace3fa& space, 
-							 TriRefList& triangles, float triCost, BezierRefList& beziers, float bezierCost) 
-    : space(space), triCost(triCost), bezierCost(bezierCost)
+  void ObjectSplitBinnerUnaligned::compute(const LinearSpace3fa& space, TriRefList& triangles, float triCost, BezierRefList& beziers, float bezierCost) 
   {
+    this->space = space;
+    this->triCost = triCost;
+    this->bezierCost = bezierCost;
     add(triangles);
     add(beziers);
     setup_binning();

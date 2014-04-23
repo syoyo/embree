@@ -207,8 +207,6 @@ namespace embree
 #endif
     //bvh->root = recurse(threadIndex,1,tris,beziers,pinfo,split);
 
-    PRINT(remainingSpatialSplits);
-    
     /* free all temporary blocks */
     Alloc::global.clear();
 
@@ -284,9 +282,9 @@ namespace embree
     float spatial_binning_aligned_sah = spatial_binning_aligned.split.splitSAH() + travCostAligned*A;
     if (enableSpatialSplits) 
     bestSAH = min(bestSAH,spatial_binning_aligned_sah );*/
-    
-    
-    ObjectSplitBinnerUnaligned object_binning_unaligned(hairspace.space,beziers,bezierCost);
+        
+    ObjectSplitBinnerUnaligned object_binning_unaligned;
+    object_binning_unaligned.compute(hairspace.space,beziers,bezierCost);
     float object_binning_unaligned_sah = object_binning_unaligned.split.splitSAH() + BVH4::travCostUnaligned*A;
     bestSAH = min(bestSAH,object_binning_unaligned_sah);
     
@@ -294,12 +292,13 @@ namespace embree
       new (&split) GeneralSplit(object_binning_aligned.pinfo.size());
 
     else if (bestSAH == object_binning_aligned_sah)
-      new (&split) GeneralSplit(object_binning_aligned.split,true);
+      new (&split) GeneralSplit(object_binning_aligned.split);
 
     /*else if (enableSpatialSplits && bestSAH == spatial_binning_aligned_sah) {
       new (&split) GeneralSplit(spatial_binning_aligned.split,true);
       atomic_add(&remainingSpatialSplits,-spatial_binning_aligned.split.numSpatialSplits);
       }*/
+
     else if (bestSAH == object_binning_unaligned_sah)
       new (&split) GeneralSplit(object_binning_unaligned.split);
 
@@ -320,8 +319,8 @@ namespace embree
     
     /*! initialize child list */
     BezierRefList cbeziers[BVH4::N]; cbeziers[0] = task.beziers;
-    GeneralSplit  csplit[BVH4::N];   csplit  [0] = task.split;
-    PrimInfo      cpinfo[BVH4::N]; cpinfo[0] = task.pinfo;
+    GeneralSplit  csplit  [BVH4::N]; csplit  [0] = task.split;
+    PrimInfo      cpinfo  [BVH4::N]; cpinfo  [0] = task.pinfo;
     size_t numChildren = 1;
     bool aligned = true;
 
@@ -344,10 +343,11 @@ namespace embree
       /*! perform best found split and find new splits */
       aligned &= csplit[bestChild].aligned;
       PrimInfo linfo,rinfo;
-      BezierRefList lbeziers,rbeziers; csplit[bestChild].split(threadIndex,&allocBezierRefs,cbeziers[bestChild],lbeziers,linfo,rbeziers,rinfo);
-      GeneralSplit lsplit; computeSplit(linfo,lbeziers,lsplit); // FIXME: ,linfo.geomBounds not correct
+      BezierRefList lbeziers,rbeziers; 
+      csplit[bestChild].split(threadIndex,&allocBezierRefs,cbeziers[bestChild],lbeziers,linfo,rbeziers,rinfo);
+      GeneralSplit lsplit; computeSplit(linfo,lbeziers,lsplit);
       GeneralSplit rsplit; computeSplit(rinfo,rbeziers,rsplit);
-      cbeziers[bestChild  ] = lbeziers; cpinfo[bestChild] = linfo; csplit[bestChild  ] = lsplit;
+      cbeziers[bestChild  ] = lbeziers; cpinfo[bestChild  ] = linfo; csplit[bestChild  ] = lsplit;
       cbeziers[numChildren] = rbeziers; cpinfo[numChildren] = rinfo; csplit[numChildren] = rsplit;
       numChildren++;
       
