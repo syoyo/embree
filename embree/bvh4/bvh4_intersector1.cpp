@@ -33,17 +33,17 @@ namespace embree
     stack[0].ptr  = bvh->root;
     stack[0].dist = neg_inf;
 
-    /*! offsets to select the side that becomes the lower or upper bound */
-    const size_t nearX = ray.dir.x >= 0.0f ? 0*sizeof(ssef_m) : 1*sizeof(ssef_m);
-    const size_t nearY = ray.dir.y >= 0.0f ? 2*sizeof(ssef_m) : 3*sizeof(ssef_m);
-    const size_t nearZ = ray.dir.z >= 0.0f ? 4*sizeof(ssef_m) : 5*sizeof(ssef_m);
-   
     /*! load the ray into SIMD registers */
     const sse3f norg(-ray.org), dir(ray.dir);
     const Vector3f ray_rdir = rcp_safe(ray.dir);
     const sse3f rdir(ray_rdir);
     const sse3f org_rdir(ray.org*ray_rdir);
     ssef rayNear(ray.tnear), rayFar(ray.tfar);
+
+    /*! offsets to select the side that becomes the lower or upper bound */
+    const size_t nearX = ray_rdir.x >= 0.0f ? 0*sizeof(ssef_m) : 1*sizeof(ssef_m);
+    const size_t nearY = ray_rdir.y >= 0.0f ? 2*sizeof(ssef_m) : 3*sizeof(ssef_m);
+    const size_t nearZ = ray_rdir.z >= 0.0f ? 4*sizeof(ssef_m) : 5*sizeof(ssef_m);
 
     const void* nodePtr = bvh->nodePtr();
     const void* triPtr  = bvh->triPtr();
@@ -153,11 +153,6 @@ namespace embree
     NodeRef* stackPtr = stack+1;        //!< current stack pointer
     stack[0]  = bvh->root;
 
-    /*! offsets to select the side that becomes the lower or upper bound */
-    const size_t nearX = ray.dir.x >= 0 ? 0*sizeof(ssef_m) : 1*sizeof(ssef_m);
-    const size_t nearY = ray.dir.y >= 0 ? 2*sizeof(ssef_m) : 3*sizeof(ssef_m);
-    const size_t nearZ = ray.dir.z >= 0 ? 4*sizeof(ssef_m) : 5*sizeof(ssef_m);
-    
     /*! load the ray into SIMD registers */
     const sse3f norg(-ray.org), dir(ray.dir);
     const Vector3f ray_rdir = rcp_safe(ray.dir);
@@ -165,9 +160,14 @@ namespace embree
     const sse3f org_rdir(ray.org*ray_rdir);
     const ssef rayNear(ray.tnear), rayFar(ray.tfar);
 
+    /*! offsets to select the side that becomes the lower or upper bound */
+    const size_t nearX = ray_rdir.x >= 0 ? 0*sizeof(ssef_m) : 1*sizeof(ssef_m);
+    const size_t nearY = ray_rdir.y >= 0 ? 2*sizeof(ssef_m) : 3*sizeof(ssef_m);
+    const size_t nearZ = ray_rdir.z >= 0 ? 4*sizeof(ssef_m) : 5*sizeof(ssef_m);
+
     const void* nodePtr = bvh->nodePtr();
     const void* triPtr  = bvh->triPtr();
-    
+
     /* pop loop */
     while (true) pop:
     {
